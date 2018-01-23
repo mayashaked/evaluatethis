@@ -1,7 +1,8 @@
 ok so here's how to use GitHub from the command line for all y'all who are real people:
 
 make a folder that you want to use on your computer
-on the command line, 
+on the command line,
+change your directory to the folder on your computer
 $ git init
 $ git add github_help.ipynb
 $ git remote add origin https://github.com/donkeyteethUX/evaluatethis.git
