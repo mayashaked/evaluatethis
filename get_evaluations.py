@@ -9,12 +9,12 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 import csv
-from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 import re
 import sys
 
-def main(pwd):
+def main(usrme, pwd, start, end):
     links = []
     with open('ALL_LINKS.csv') as f:
         reader = csv.reader(f)
@@ -22,28 +22,38 @@ def main(pwd):
             for l in row:
                 links.append(l)
 
-    driver = webdriver.Chrome("C:/Users/alex/Downloads/chromedriver_win32/chromedriver.exe")
+    driver = webdriver.Chrome("/home/alexmaiorella/cmsc12200-win-18-alexmaiorella/Project/chromedriver")
     driver.get("https://evaluations.uchicago.edu/")
+    driver.implicitly_wait(10)
     elem = driver.find_element_by_name("j_username")
     elemp = driver.find_element_by_name("j_password")
-    elem.send_keys("alexmaiorella")
+    elem.send_keys(usrme)
     elemp.send_keys(pwd)
     elemp.send_keys(Keys.RETURN)
 
     raw_evals = []
-    for l in links[:20]:
-        driver.get(l)
+    failures = []
+
+    for index, link in enumerate(links[start:end]):
+        driver.get(link)
         raw_eval = driver.find_element_by_tag_name("html").text
         title = driver.find_element_by_id("page-title").text
+        print(index)
+        print(title)
         try:
-            dept = re.search("[A-Z]{4}", title)[0]
+            dept = re.findall("[A-Z]{4}", title)[0]
+            with open(dept + '-EVALS.csv', 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow([title, raw_eval])
         except:
-            dept = 'MISFIT'
-        with open(dept + '-EVALS.csv', 'a') as f:
-            writer = csv.writer(f)
-            writer.writerow([raw_eval])
+            print("FYI: I failed to get the evaluation for link: " + str(index))
+            failures.append(index)
 
+    return failures
 
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    try:
+        main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    except:
+        print("arguements are: username, password, starting index, finishing index")
