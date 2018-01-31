@@ -14,7 +14,7 @@ from selenium.webdriver.common.keys import Keys
 import re
 import sys
 
-def main(usrme, pwd, start, end):
+def main(usrme, pwd, start):
     links = []
     with open('ALL_LINKS.csv') as f:
         reader = csv.reader(f)
@@ -24,7 +24,6 @@ def main(usrme, pwd, start, end):
 
     driver = webdriver.Chrome("/home/alexmaiorella/cmsc12200-win-18-alexmaiorella/Project/chromedriver")
     driver.get("https://evaluations.uchicago.edu/")
-    driver.implicitly_wait(10)
     elem = driver.find_element_by_name("j_username")
     elemp = driver.find_element_by_name("j_password")
     elem.send_keys(usrme)
@@ -33,27 +32,23 @@ def main(usrme, pwd, start, end):
 
     raw_evals = []
     failures = []
-
-    for index, link in enumerate(links[start:end]):
+    for index, link in enumerate(links[start:]):
         driver.get(link)
+        driver.implicitly_wait(10)
         raw_eval = driver.find_element_by_tag_name("html").text
         title = driver.find_element_by_id("page-title").text
-        print(index)
-        print(title)
+        print((index + start, title))
         try:
             dept = re.findall("[A-Z]{4}", title)[0]
             with open(dept + '-EVALS.csv', 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow([title, raw_eval])
         except:
-            print("FYI: I failed to get the evaluation for link: " + str(index))
-            failures.append(index)
+            print("FYI: I failed to get the evaluation for link: " + str(index + start))
+            failures.append(index + start)
 
     return failures
 
 
 if __name__ == '__main__':
-    try:
-        main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
-    except:
-        print("arguements are: username, password, starting index, finishing index")
+    main(sys.argv[1], sys.argv[2], int(sys.argv[3]))
