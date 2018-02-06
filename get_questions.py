@@ -9,11 +9,15 @@
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
 import csv
+import sys
+import re
 
 def get_questions(csv_path):
+
+    csv.field_size_limit(sys.maxsize)
     evaluations = []
 
-    with open(csv_path) as f:
+    with open(csv_path, encoding = 'utf8') as f:
         reader = csv.reader(f)
         for row in reader:
             evaluations.append(row)
@@ -21,13 +25,14 @@ def get_questions(csv_path):
     all_lines = []
 
     for e in evaluations:
-        lines = e.split('\n')
+        lines = e[0].split('\n')
         all_lines.extend(lines)
 
     question_canidates = []
     for line in all_lines:
         if '?' in line:
-            question_canidates.append(line)
+            question = re.match('.*\?', line)[0]
+            question_canidates.append(question)
 
     unique_canidates = set(question_canidates)
     filtered_canidates = []
@@ -37,9 +42,15 @@ def get_questions(csv_path):
             filtered_canidates.append(q)
 
 
-
-
-
+    with open('eval_questions.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerows([[q] for q in filtered_canidates])
 
 if __name__ == '__main__':
-    get_questions(sys.argv[1])
+    try:
+        get_questions(sys.argv[1])
+    except:
+        try:
+            get_questions('C:/Users/alex/Desktop/unique_evals.csv')
+        except:
+            print('Arguement is path to evaluations csv file')
