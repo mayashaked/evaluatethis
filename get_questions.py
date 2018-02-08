@@ -34,7 +34,7 @@ def get_questions(csv_path):
             question = re.match('.*\?', line)[0]
             question_canidates.append(question)
 
-    unique_canidates = set(question_canidates)
+    unique_canidates = list(set(question_canidates))
     filtered_canidates = []
 
     for q in unique_canidates:
@@ -42,7 +42,7 @@ def get_questions(csv_path):
             filtered_canidates.append(q)
 
 
-    with open('eval_questions.csv', 'w') as f:
+    with open('eval_questions.csv', 'w', encoding = 'utf8') as f:
         writer = csv.writer(f)
         writer.writerows([[q] for q in filtered_canidates])
 
