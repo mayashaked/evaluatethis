@@ -53,25 +53,23 @@ def main(evals_file, question_file):
             try:
                 q = re.match('.*\?', line).group(0)
                 if q in question_list:
+                    if q in strengths_list: #questions that directly correspond to instructor
+                        q = "strengths" 
+                    if q in course_qs: #questions that directly correspond to course
+                        q = "course"
                     response_dict[q] = []
                     # insert some clever shit here
 
-
             except:
-                pass
-
-            if line in question_list:
-                question = line
-                print(question)
-                response_dict[question] = []
-
-            if line not in question_list:
+                if line not in question_list:
                 if len(response_dict) > 0:
-                    response_dict[question].append(line)
+                    response_dict[q].append(line)
 
         eval_list.append(response_dict)
 
-    
+    #writes to json
+    with open('eval_list', 'w') as outfile:
+    json.dump(eval_list, outfile)
 
 
 if __name__ == '__main__':
