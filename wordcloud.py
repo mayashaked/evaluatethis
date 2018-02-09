@@ -1,7 +1,7 @@
 import json
 from wordcloud import WordCloud
 
-STOPWORDS = ['classes', 'class', 'professor', 'TA', 'TAs', 'if', 'and', 'or', 'but', 'also', 'the', 'so', 'then', 'I', 'her', 'him', 'them', 'they']
+STOPWORDS = ['classes', 'class', 'professor', 'ta', 'tas', 'if', 'and', 'or', 'but', 'also', 'the', 'so', 'then', 'i', 'her', 'him', 'them', 'they']
 
 with open('sampledict.json') as json_data:
 	alldicts = json.load(json_data)
@@ -13,6 +13,7 @@ for evaluation in alldicts:
 		allwords = []
 		answers = evaluation[question]
 		for answer in answers:
+			answer.lower()
 			words = answer.split()
 			allwords += words
 	goodwords = [x for x in allwords if x not in STOPWORDS]
