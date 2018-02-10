@@ -2,10 +2,8 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 sid = SentimentIntensityAnalyzer()
 
-
 with open('sampledict.json') as json_data:
 	alldicts = json.load(json_data)
-
 
 for evaluation in alldicts
 		polar = 0
@@ -17,8 +15,9 @@ for evaluation in alldicts
 		for sentence in sentences:
 			ss = sid.polarity_scores(sentence)
 			polar += ss['compound']
-			neg += ss['neu']
+			neg += ss['neg']
 			pos += ss['pos']
+			neu += ss['neu']
 	print('polar: ' + polar/len(evaluation))
 	print('negative: ' + neg/len(evaluation))
 	print('neutral: ' + neu/len(evaluation))
