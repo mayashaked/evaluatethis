@@ -16,8 +16,7 @@ for evaluation in alldicts:
 			answer.lower()
 			words = answer.split()
 			allwords += words
-	goodwords = [x for x in allwords if x not in STOPWORDS]
-	wordcloud = WordCloud(width = 100, height = 500).generate(' '.join(goodwords))
+	wordcloud = WordCloud(stopwords = STOPWORDS, width = 100, height = 500).generate(' '.join(goodwords))
 	
 
 
