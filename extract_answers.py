@@ -15,7 +15,7 @@ import json
 
 EXACT_MATCH_ONLY = ['overall', 'explain', 'the content material', 'useful?',
  'exams', 'the tests', 'the textbook', 'this course', 'the homework assignments',
- 'very useful', 'labs', 'level', 'the instructor', 'Useful?', 'Texts?']
+ 'very useful', 'labs', 'level', 'the instructor', 'Useful?', 'Texts?', 'the assignments', 'Weaknesses?', 'Strengths?']
 
 def main(evals_file, all_question_file, course_q, instructor_q):
     #import all evals
@@ -51,7 +51,7 @@ def main(evals_file, all_question_file, course_q, instructor_q):
     instructor = re.compile("Instructor\(s\): (.*)")
     eval_list = []
 
-    for e in evals[10:30]:
+    for e in evals[:500]:
         num_responses = int(e.split('\n')[7][-2:])
         in_question = False
         answers = []
@@ -88,8 +88,7 @@ def main(evals_file, all_question_file, course_q, instructor_q):
                     break
 
             for l in instructor_qs:
-                if l in line:
-                    print(l)
+                if l in line or line in ['Weaknesses?', 'Strengths?']:
                     q = 'instructor_responses'
                     response_dict[q] = []
                     in_question = True
@@ -99,12 +98,14 @@ def main(evals_file, all_question_file, course_q, instructor_q):
 
             # extracts the time info, works independently
             if 'How many hours per week did you' in line:
-                time = []
-                time.extend([re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]])
-                response_dict['time_stats'] = time
+                try:
+                    time = []
+                    time.extend([re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]])
+                    response_dict['time_stats'] = time
+                except:
+                    pass
 
         eval_list.append(response_dict)
-        print(response_dict)
     return eval_list
 
 def stopping_cond(line, question_list, responses_found, num_responses):
@@ -119,7 +120,8 @@ def stopping_cond(line, question_list, responses_found, num_responses):
 
     for q in question_list:
         if q in line:
-            return True
+            if q != line:
+                print((q,line))
 
     return False
 
