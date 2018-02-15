@@ -13,6 +13,10 @@ import sys
 import re
 import json
 
+EXACT_MATCH_ONLY = ['overall', 'explain', 'the content material', 'useful?',
+ 'exams', 'the tests', 'the textbook', 'this course', 'the homework assignments',
+ 'very useful', 'labs', 'level', 'the instructor', 'Useful?', 'Texts?']
+
 def main(evals_file, all_question_file, course_q, instructor_q):
     #import all evals
     csv.field_size_limit(sys.maxsize)
@@ -96,7 +100,7 @@ def main(evals_file, all_question_file, course_q, instructor_q):
             # extracts the time info, works independently
             if 'How many hours per week did you' in line:
                 time = []
-                time.extend(e.split('\n')[i+1:i+4])
+                time.extend([re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]])
                 response_dict['time_stats'] = time
 
         eval_list.append(response_dict)
@@ -108,6 +112,9 @@ def stopping_cond(line, question_list, responses_found, num_responses):
         return True
 
     if re.search('[0-9][0-9]? / [0-9][0-9]?%', line):
+        return True
+
+    if line in EXACT_MATCH_ONLY:
         return True
 
     for q in question_list:
