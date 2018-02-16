@@ -63,7 +63,7 @@ def iterate(evals, question_list, course_qs, instructor_qs):
         in_question = False
         answers = []
         response_dict = {}
-        
+
         for header_line in e_list[:10]: # deal seperately with header rows to avoid conflicts
 
             if course_info_re.match(header_line):
@@ -111,7 +111,7 @@ def iterate(evals, question_list, course_qs, instructor_qs):
                     break
 
             # extracts the time info, works independently
-            if 'How many hours per week did you' in line:
+            if re.match('How many hours per week (outside of attending required sessions )?did you spend on this course?', line):
                 try:
                     time = []
                     time.extend([re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]])
@@ -122,7 +122,7 @@ def iterate(evals, question_list, course_qs, instructor_qs):
         eval_list.append(response_dict)
     return eval_list
 
-    
+
 
 def stopping_cond(line, question_list, responses_found, num_responses):
     if '©' in line:
@@ -139,21 +139,19 @@ def stopping_cond(line, question_list, responses_found, num_responses):
 
     for q in question_list:
         if q.lower() in line.lower():
-            '''if q != line and 'Strengths' not in line and 'Weaknesses' not in line:
-                                                    print((q,line))'''
             return True
 
     return False
 
 
 def write_to_json(eval_list, file):
-    
+
     with open(file, 'w', encoding = 'ISO-8859-1') as outfile:
         json.dump(eval_list, outfile)
-    
+
 
 
 if __name__ == '__main__':
-    main('/home/alexmaiorella/Downloads/unique_evals.csv', '/home/alexmaiorella/Downloads/manually_cleaned_eval_questions.csv', 
+    main('/home/alexmaiorella/Downloads/unique_evals.csv', '/home/alexmaiorella/Downloads/manually_cleaned_eval_questions.csv',
         '/home/alexmaiorella/Downloads/course_quality_questions.csv', '/home/alexmaiorella/Downloads/instructor_quality_questions.csv',
         '/home/alexmaiorella/Downloads/evals_json_version_1')
