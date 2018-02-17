@@ -16,7 +16,7 @@ import json
 EXACT_MATCH_ONLY = {'overall', 'explain', 'the content material', 'useful?',
  'exams', 'the tests', 'the textbook', 'this course', 'the homework assignments',
  'very useful', 'labs', 'level', 'the instructor','texts?', 'additional comments'
- 'the assignments', 'weaknesses?', 'strengths?', 'anyone interested in the topic', 
+ 'the assignments', 'weaknesses?', 'strengths?', 'anyone interested in the topic',
  'written comments', 'which least?'}
 
 AGREE_CATEGORIES = {'overall', 'the tests', 'the instructor', 'the assignments', 'the readings'}
@@ -71,12 +71,14 @@ def main(evals_file, all_question_file, course_q, instructor_q, agree_disagree_q
 def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
 
     #compile regular expression to search for instructor name
-    instructor_re = re.compile("Instructor\(s\): ?(.*)")
+    instructor_re = re.compile("Instructor\(s\): ?(.+)")
     course_info_re = re.compile('([A-Z]{4}) ([0-9]{5}): ?(.*)')
     num_responses_re = re.compile('esponses: ?([0-9]*)')
+    identical_courses_re = re.compile('Identical Courses: ?(.+)')
+    section_year_re = re.compile('Section ([0-9]{2}) - ([a-zA-z]+) ([0-9]{4})')
     eval_list = []
 
-    for e in evals[44:46]:
+    for e in evals:
         e_list = e.split('\n') #splits evaluations into lines
         in_question = False
         in_num_question = False
@@ -99,6 +101,16 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                 num_responses = num_responses_re.search(header_line)
                 response_dict['num_responses'] = num_responses.group(1)
 
+            if identical_courses_re.match(header_line):
+                identical_courses = identical_courses_re.match(header_line)
+                response_dict['identical_courses'] = identical_courses.group(1)
+
+            if section_year_re.match(header_line):
+                section_year = section_year_re.match(header_line)
+                response_dict['section'] = section_year.group(1)
+                response_dict['term'] = section_year.group(2)
+                response_dict['year'] = section_year.group(3)
+
 
         responses_found = 0
         for i, line in enumerate(e_list):
@@ -120,7 +132,8 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
             for l in course_qs:
                 if l.lower() in line.lower():
                     q = 'course_responses'
-                    response_dict[q] = []
+                    if not q in response_dict:
+                        response_dict[q] = []
                     in_question = True
                     answers = []
                     responses_found = 0
@@ -129,16 +142,17 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
             for l in instructor_qs:
                 if l.lower() in line.lower() or line.lower() in ['weaknesses?', 'strengths?']:
                     q = 'instructor_responses'
-                    response_dict[q] = []
+                    if not q in response_dict:
+                        response_dict[q] = []
                     in_question = True
                     answers = []
                     responses_found = 0
                     break
 
-                      
-            if line.lower() in AGREE_DISAGREE_INDICATORS:         
+
+            if line.lower() in AGREE_DISAGREE_INDICATORS:
                 if e_list[i-1].lower() in AGREE_CATEGORIES:
-                    q = e_list[i-1]
+                    q = e_list[i-1].replace(' ', '_')
                     response_dict[q] = []
                     in_question = True
                     in_num_question = True
@@ -155,6 +169,7 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     response_dict['high_time'] = time_stats[2]
                 except:
                     pass
+
         eval_list.append(response_dict)
     return eval_list
 
@@ -188,6 +203,6 @@ def write_to_json(eval_list, file):
 
 
 if __name__ == '__main__':
-    main('/home/alexmaiorella/Downloads/unique_evals.csv', '/home/alexmaiorella/Downloads/manually_cleaned_eval_questions.csv',
-        '/home/alexmaiorella/Downloads/course_quality_questions.csv', '/home/alexmaiorella/Downloads/instructor_quality_questions.csv',
-        '/home/alexmaiorella/Downloads/agree-disagree_questions.csv', '/home/alexmaiorella/Downloads/evals_json_version_3')
+    main('C:/Users/alex/Desktop/unique_evals.csv', 'C:/Users/alex/Desktop/manually_cleaned_eval_questions.csv',
+        'C:/Users/alex/Desktop/course_quality_questions.csv', 'C:/Users/alex/Desktop/instructor_quality_questions.csv',
+        'C:/Users/alex/Desktop/agree-disagree_questions.csv', 'C:/Users/alex/Desktop/evals_json_version_3')
