@@ -16,9 +16,20 @@ import json
 EXACT_MATCH_ONLY = {'overall', 'explain', 'the content material', 'useful?',
  'exams', 'the tests', 'the textbook', 'this course', 'the homework assignments',
  'very useful', 'labs', 'level', 'the instructor','texts?', 'additional comments'
- 'the assignments', 'weaknesses?', 'strengths?', 'anyone interested in the topic', 'written comments', 'which least?'}
+ 'the assignments', 'weaknesses?', 'strengths?', 'anyone interested in the topic', 
+ 'written comments', 'which least?'}
 
-def main(evals_file, all_question_file, course_q, instructor_q, file):
+AGREE_CATEGORIES = {'overall', 'the tests', 'the instructor', 'the assignments', 'the readings'}
+
+AGREE_DISAGREE_INDICATORS = \
+{'  n/a strongly disagree disagree neutral agree strongly agree',
+ '  none little some a lot extremely vigorously',
+ '  1 2 3 4 5',
+ '  na no gains a little gain moderate gain good gain great gain',
+ '  na 1-strongly disagree 2-disgree 3-neutral 4-agree 5-strongly agree',
+ '  a-strongly agree b-agree c-neutral d-disagree e-strongly disagree'}
+
+def main(evals_file, all_question_file, course_q, instructor_q, agree_disagree_q, file):
 
     csv.field_size_limit(sys.maxsize)
 
@@ -46,11 +57,18 @@ def main(evals_file, all_question_file, course_q, instructor_q, file):
         for row in reader:
             instructor_qs.append(row[0])
 
-    eval_list = iterate(evals, question_list, course_qs, instructor_qs)
+    agree_disagree_qs = []
+    with open(agree_disagree_q, encoding = 'ISO-8859-1') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if row:
+                agree_disagree_qs.append(row[0])
+
+    eval_list = iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs)
     write_to_json(eval_list, file)
 
 
-def iterate(evals, question_list, course_qs, instructor_qs):
+def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
 
     #compile regular expression to search for instructor name
     instructor_re = re.compile("Instructor\(s\): ?(.*)")
@@ -58,9 +76,10 @@ def iterate(evals, question_list, course_qs, instructor_qs):
     num_responses_re = re.compile('esponses: ?([0-9]*)')
     eval_list = []
 
-    for e in evals:
+    for e in evals[44:46]:
         e_list = e.split('\n') #splits evaluations into lines
         in_question = False
+        in_num_question = False
         answers = []
         response_dict = {}
 
@@ -74,7 +93,7 @@ def iterate(evals, question_list, course_qs, instructor_qs):
 
             if instructor_re.match(header_line):
                 prof = instructor_re.match(header_line)
-                response_dict['instructor(s)'] = prof.group(1).split('; ')
+                response_dict['instructors'] = prof.group(1).split('; ')
 
             if num_responses_re.search(header_line):
                 num_responses = num_responses_re.search(header_line)
@@ -87,13 +106,19 @@ def iterate(evals, question_list, course_qs, instructor_qs):
             if in_question and stopping_cond(line, question_list, responses_found, num_responses):
                 response_dict[q].extend(answers)
                 in_question = False
+                in_num_question = False
 
             if in_question:
-                answers.append(line)
-                responses_found += 1
+                if in_num_question:
+                    m = re.match('(.+) ([0-9][0-9]?% [0-9][0-9]?% [0-9][0-9]?% [0-9][0-9]?% [0-9][0-9]?% ?[0-9]?[0-9]?%?)', line)
+                    if m:
+                        answers.append(m.group(0))
+                else:
+                    answers.append(line)
+                    responses_found += 1
 
             for l in course_qs:
-                if l in line:
+                if l.lower() in line.lower():
                     q = 'course_responses'
                     response_dict[q] = []
                     in_question = True
@@ -102,7 +127,7 @@ def iterate(evals, question_list, course_qs, instructor_qs):
                     break
 
             for l in instructor_qs:
-                if l in line or line.lower() in ['weaknesses?', 'strengths?']:
+                if l.lower() in line.lower() or line.lower() in ['weaknesses?', 'strengths?']:
                     q = 'instructor_responses'
                     response_dict[q] = []
                     in_question = True
@@ -110,15 +135,26 @@ def iterate(evals, question_list, course_qs, instructor_qs):
                     responses_found = 0
                     break
 
+                      
+            if line.lower() in AGREE_DISAGREE_INDICATORS:         
+                if e_list[i-1].lower() in AGREE_CATEGORIES:
+                    q = e_list[i-1]
+                    response_dict[q] = []
+                    in_question = True
+                    in_num_question = True
+                    answers = []
+                    responses_found = 0
+
+
             # extracts the time info, works independently
             if re.match('How many hours per week (outside of attending required sessions )?did you spend on this course?', line):
                 try:
-                    time = []
-                    time.extend([re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]])
-                    response_dict['time_stats'] = time
+                    time_stats = [re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]]
+                    response_dict['low_time'] = time_stats[0]
+                    response_dict['avg_time'] = time_stats[1]
+                    response_dict['high_time'] = time_stats[2]
                 except:
                     pass
-
         eval_list.append(response_dict)
     return eval_list
 
@@ -154,4 +190,4 @@ def write_to_json(eval_list, file):
 if __name__ == '__main__':
     main('/home/alexmaiorella/Downloads/unique_evals.csv', '/home/alexmaiorella/Downloads/manually_cleaned_eval_questions.csv',
         '/home/alexmaiorella/Downloads/course_quality_questions.csv', '/home/alexmaiorella/Downloads/instructor_quality_questions.csv',
-        '/home/alexmaiorella/Downloads/evals_json_version_1')
+        '/home/alexmaiorella/Downloads/agree-disagree_questions.csv', '/home/alexmaiorella/Downloads/evals_json_version_3')
