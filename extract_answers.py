@@ -77,13 +77,15 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
     identical_courses_re = re.compile('Identical Courses: ?(.+)')
     section_year_re = re.compile('Section ([0-9]{2}) - ([a-zA-z]+) ([0-9]{4})')
     eval_list = []
+    unique_id = 15000
 
     for e in evals:
+        unique_id += 1
         e_list = e.split('\n') #splits evaluations into lines
         in_question = False
         in_num_question = False
         answers = []
-        response_dict = {}
+        response_dict = {'unique_id' : unique_id}
 
         for header_line in e_list[:10]: # deal seperately with header rows to avoid conflicts
 
@@ -205,4 +207,4 @@ def write_to_json(eval_list, file):
 if __name__ == '__main__':
     main('C:/Users/alex/Desktop/unique_evals.csv', 'C:/Users/alex/Desktop/manually_cleaned_eval_questions.csv',
         'C:/Users/alex/Desktop/course_quality_questions.csv', 'C:/Users/alex/Desktop/instructor_quality_questions.csv',
-        'C:/Users/alex/Desktop/agree-disagree_questions.csv', 'C:/Users/alex/Desktop/evals_json_version_3')
+        'C:/Users/alex/Desktop/agree-disagree_questions.csv', 'C:/Users/alex/Desktop/evals_json_version_3_part2')
