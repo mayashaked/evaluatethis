@@ -29,6 +29,9 @@ AGREE_DISAGREE_INDICATORS = \
  '  na 1-strongly disagree 2-disgree 3-neutral 4-agree 5-strongly agree',
  '  a-strongly agree b-agree c-neutral d-disagree e-strongly disagree'}
 
+YES_NO = ['Would you recommend this class to another student?',
+'Overall, would you say you had a good instructor?']
+
 def main(evals_file, all_question_file, course_q, instructor_q, agree_disagree_q, file):
 
     csv.field_size_limit(sys.maxsize)
@@ -70,22 +73,22 @@ def main(evals_file, all_question_file, course_q, instructor_q, agree_disagree_q
 
 def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
 
-    #compile regular expression to search for instructor name
+    # compile regular expressions to find info from header rows
     instructor_re = re.compile("Instructor\(s\): ?(.+)")
     course_info_re = re.compile('([A-Z]{4}) ([0-9]{5}): ?(.*)')
     num_responses_re = re.compile('esponses: ?([0-9]*)')
     identical_courses_re = re.compile('Identical Courses: ?(.+)')
-    section_year_re = re.compile('Section ([0-9]{2}) - ([a-zA-z]+) ([0-9]{4})')
+    section_year_re = re.compile('Section ([0-9][0-9]?) - ([a-zA-z]+) ([0-9]{4})')
     eval_list = []
-    unique_id = 15000
+    unique_id = 0
 
-    for e in evals:
-        unique_id += 1
-        e_list = e.split('\n') #splits evaluations into lines
+    for e in evals[:15000]:
+        e_list = e.split('\n') # splits evaluation into lines
         in_question = False
         in_num_question = False
         answers = []
         response_dict = {'unique_id' : unique_id}
+        unique_id += 1
 
         for header_line in e_list[:10]: # deal seperately with header rows to avoid conflicts
 
@@ -124,7 +127,8 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
 
             if in_question:
                 if in_num_question:
-                    m = re.match('(.+) ([0-9][0-9]?% [0-9][0-9]?% [0-9][0-9]?% [0-9][0-9]?% [0-9][0-9]?% ?[0-9]?[0-9]?%?)', line)
+                    m = re.match('(.+) ([0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% ?[0-9]?[0-9]?[0-9]?%?)', line)
+                    # Fuck regular expressions
                     if m:
                         answers.append(m.group(0))
                 else:
@@ -142,7 +146,7 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     break
 
             for l in instructor_qs:
-                if l.lower() in line.lower() or line.lower() in ['weaknesses?', 'strengths?']:
+                if l.lower() in line.lower() or line.lower() in {'weaknesses?', 'strengths?'}:
                     q = 'instructor_responses'
                     if not q in response_dict:
                         response_dict[q] = []
@@ -151,6 +155,21 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     responses_found = 0
                     break
 
+            if line == 'Why?' and e_list[i-5] == YES_NO[0]:
+                q = 'course_responses'
+                if not q in response_dict:
+                    response_dict[q] = []
+                in_question = True
+                answers = []
+                responses_found = 0
+
+            if line == 'Why?' and e_list[i-5] == YES_NO[1]:
+                q = 'instructor_responses'
+                if not q in response_dict:
+                    response_dict[q] = []
+                in_question = True
+                answers = []
+                responses_found = 0
 
             if line.lower() in AGREE_DISAGREE_INDICATORS:
                 if e_list[i-1].lower() in AGREE_CATEGORIES:
@@ -159,11 +178,18 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     in_question = True
                     in_num_question = True
                     answers = []
-                    responses_found = 0
+                if e_list[i-1].lower() == 'explain' and "rate instructor's ability" in e_list[i+1].lower():
+                    # Deals with formating corner case in some language evaluations
+                    q = 'The_Instructor'
+                    in_question = True
+                    in_num_question = True
+                    answers = []
+                responses_found = 0
 
 
-            # extracts the time info, works independently
-            if re.match('How many hours per week (outside of attending required sessions )?did you spend on this course?', line):
+            # extracts the time info and yes/no answers, works independently of the mechanism above
+            if re.match('How many hours per week (outside of attending required sessions )?did you spend on this course?', line) \
+            or re.match('Hours / week?', line):
                 try:
                     time_stats = [re.search('Answer ([0-9]\.?[0-9]?)', l).group(1) for l in e_list[i+1:i+4]]
                     response_dict['low_time'] = time_stats[0]
@@ -172,9 +198,20 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                 except:
                     pass
 
+            if line in YES_NO and e_list[i+1] == 'Yes' and e_list[i+3] == 'No':
+                try:
+                    yes = re.match('([0-9][0-9]?) / [0-9][0-9]?[0-9]?%', e_list[i+2]).group(1)
+                    no = re.match('([0-9][0-9]?) / [0-9][0-9]?[0-9]?%', e_list[i+4]).group(1)
+                    if 'recommend' in line:
+                        response_dict['recommend'] = (yes, no)
+                    else:
+                        response_dict['good_instructor'] = (yes, no)
+                except:
+                    pass
+
+
         eval_list.append(response_dict)
     return eval_list
-
 
 
 def stopping_cond(line, question_list, responses_found, num_responses):
@@ -184,7 +221,7 @@ def stopping_cond(line, question_list, responses_found, num_responses):
     if num_responses != 0 and responses_found == num_responses: # Don't trust response number if it says zero
         return True
 
-    if re.search('[0-9][0-9]? / [0-9][0-9]?%', line):
+    if re.search('[0-9][0-9]? / [0-9][0-9]?[0-9]?%', line):
         return True
 
     if line.lower() in EXACT_MATCH_ONLY:
@@ -207,4 +244,4 @@ def write_to_json(eval_list, file):
 if __name__ == '__main__':
     main('C:/Users/alex/Desktop/unique_evals.csv', 'C:/Users/alex/Desktop/manually_cleaned_eval_questions.csv',
         'C:/Users/alex/Desktop/course_quality_questions.csv', 'C:/Users/alex/Desktop/instructor_quality_questions.csv',
-        'C:/Users/alex/Desktop/agree-disagree_questions.csv', 'C:/Users/alex/Desktop/evals_json_version_3_part2')
+        'C:/Users/alex/Desktop/agree-disagree_questions.csv', 'C:/Users/alex/Desktop/evals_json_version_4_part1')
