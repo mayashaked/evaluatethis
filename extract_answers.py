@@ -19,7 +19,8 @@ EXACT_MATCH_ONLY = {'overall', 'explain', 'the content material', 'useful?',
  'the assignments', 'weaknesses?', 'strengths?', 'anyone interested in the topic',
  'written comments', 'which least?'}
 
-AGREE_CATEGORIES = {'overall', 'the tests', 'the instructor', 'the assignments', 'the readings'}
+AGREE_CATEGORIES = {'overall', 'the tests', 'the instructor', 'the assignments',
+ 'the readings', 'the homework assignments'}
 
 AGREE_DISAGREE_INDICATORS = \
 {'  n/a strongly disagree disagree neutral agree strongly agree',
@@ -173,12 +174,14 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
             if line.lower() in AGREE_DISAGREE_INDICATORS:
                 if e_list[i-1].lower() in AGREE_CATEGORIES:
                     q = e_list[i-1].replace(' ', '_')
+                    if q == 'The_Homework_Assignments':
+                        q = 'The_Assignments'
                     response_dict[q] = []
                     in_question = True
                     in_num_question = True
                     answers = []
                 if e_list[i-1].lower() == 'explain' and "rate instructor's ability" in e_list[i+1].lower():
-                    # Deals with formating corner case in some language evaluations
+                    # Deals with a formating corner case in some language evaluations
                     q = 'The_Instructor'
                     in_question = True
                     in_num_question = True
@@ -238,7 +241,6 @@ def write_to_json(eval_list, file):
 
     with open(file, 'w', encoding = 'ISO-8859-1') as outfile:
         json.dump(eval_list, outfile)
-
 
 
 if __name__ == '__main__':

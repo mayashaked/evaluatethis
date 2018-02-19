@@ -33,31 +33,43 @@ import numpy as np
 def add_score_cols(df):
 
     df2 = df.copy().fillna(0)
+    # Copy df to not change values while iterating over rows
 
     for row in df2.iterrows():
+
+        # The following complication is neccesary because some physics
+        # evaluations have agree...disagree rather than vice versa
+        reverse_order = False
+        if row[1].dept == 'PHYS':
+            reverse_order = True
+        if row[1].dept == 'PHSC':
+            reverse_order = 'maybe'
+
         if row[1].The_Instructor:
-            instructor_score = compute_numerical_score(row[1].The_Instructor)
+            instructor_score = compute_numerical_score(row[1].The_Instructor, reverse_order)
             df.loc[row[0], 'instructor_score'] = instructor_score
         if row[1].The_Assignments:
-            assignments_score = compute_numerical_score(row[1].The_Assignments)
+            assignments_score = compute_numerical_score(row[1].The_Assignments, reverse_order)
             df.loc[row[0], 'assignments_score'] = assignments_score
         if row[1].The_Tests:
-            tests_score = compute_numerical_score(row[1].The_Tests)
+            tests_score = compute_numerical_score(row[1].The_Tests, reverse_order)
             df.loc[row[0], 'tests_score'] = tests_score
         if row[1].Overall:
-            overall_score = compute_numerical_score(row[1].Overall)
+            overall_score = compute_numerical_score(row[1].Overall, reverse_order)
             df.loc[row[0], 'overall_score'] = overall_score
         if row[1].The_Readings:
-            readings_score = compute_numerical_score(row[1].The_Readings)
+            readings_score = compute_numerical_score(row[1].The_Readings, reverse_order)
             df.loc[row[0], 'readings_score'] = readings_score
 
-def compute_numerical_score(data):
+def compute_numerical_score(data, reverse_order):
 
     scores = []
     denominator = []
 
     for line in data:
         p = [int(a) for a in re.findall('([0-9][0-9]?[0-9]?)%', line)]
+        if reverse_order == True:
+            p.reverse()
 
         if len(p) == 6:
         # first element is N/A percentage; don't factor it into weighted score/possible score
@@ -77,7 +89,12 @@ def compute_numerical_score(data):
     if sum(denominator) == 0:
         return np.nan
 
-    return round(sum(scores) / sum(denominator) * 100, 1)
+    score = round(sum(scores) / sum(denominator) * 100, 1)
+
+    if score <= 50 and reverse_order == 'maybe':
+        return compute_numerical_score(data, True)
+
+    return score
 
 
 if __name__ == '__main__':
