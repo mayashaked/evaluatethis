@@ -28,9 +28,10 @@
 ###################################################################
 import re
 import pandas as pd
+import numpy as np
 
-def main():
-    df = pd.read_json('C:/Users/alex/Desktop/evals_json_version_4_part2', convert_dates = False).head()
+def add_score_cols(df):
+
     df2 = df.copy().fillna(0)
 
     for row in df2.iterrows():
@@ -46,30 +47,38 @@ def main():
         if row[1].Overall:
             overall_score = compute_numerical_score(row[1].Overall)
             df.loc[row[0], 'overall_score'] = overall_score
+        if row[1].The_Readings:
+            readings_score = compute_numerical_score(row[1].The_Readings)
+            df.loc[row[0], 'readings_score'] = readings_score
 
 def compute_numerical_score(data):
-    print(data)
+
     scores = []
     denominator = []
 
     for line in data:
         p = [int(a) for a in re.findall('([0-9][0-9]?[0-9]?)%', line)]
-        print(p)
+
         if len(p) == 6:
         # first element is N/A percentage; don't factor it into weighted score/possible score
             weighted_score = p[1]+p[2]*2+p[3]*3+p[4]*4+p[5]*5
             possible_score = sum(p[1:])*5
 
-        if len(p) == 5:
+        elif len(p) == 5:
             weighted_score = p[0]+p[1]*2+p[2]*3+p[3]*4+p[4]*5
             possible_score = sum(p)*5
 
+        else:
+            return np.nan
 
         scores.append(weighted_score)
         denominator.append(possible_score)
 
-    return sum(scores) / sum(denominator)
+    if sum(denominator) == 0:
+        return np.nan
+
+    return round(sum(scores) / sum(denominator) * 100, 1)
 
 
 if __name__ == '__main__':
-    main()
+    main(df)

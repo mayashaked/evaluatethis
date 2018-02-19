@@ -116,7 +116,6 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                 response_dict['term'] = section_year.group(2)
                 response_dict['year'] = section_year.group(3)
 
-
         responses_found = 0
         for i, line in enumerate(e_list):
 
@@ -155,7 +154,7 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     responses_found = 0
                     break
 
-            if line == 'Why?' and e_list[i-5] == YES_NO[0]:
+            if line in {'Why?', 'Please explain:', 'In what way?'} and e_list[i-5] == YES_NO[0]:
                 q = 'course_responses'
                 if not q in response_dict:
                     response_dict[q] = []
@@ -163,7 +162,7 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                 answers = []
                 responses_found = 0
 
-            if line == 'Why?' and e_list[i-5] == YES_NO[1]:
+            if line in {'Why?', 'Please explain:', 'In what way?'} and e_list[i-5] == YES_NO[1]:
                 q = 'instructor_responses'
                 if not q in response_dict:
                     response_dict[q] = []
@@ -218,7 +217,8 @@ def stopping_cond(line, question_list, responses_found, num_responses):
     if '©' in line:
         return True
 
-    if num_responses != 0 and responses_found == num_responses: # Don't trust response number if it says zero
+    if num_responses != 0 and responses_found == num_responses:
+        # Don't trust response number if it says zero
         return True
 
     if re.search('[0-9][0-9]? / [0-9][0-9]?[0-9]?%', line):
