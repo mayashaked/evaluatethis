@@ -17,7 +17,7 @@ EXACT_MATCH_ONLY = {'overall', 'explain', 'the content material', 'useful?',
  'exams', 'the tests', 'the textbook', 'this course', 'the homework assignments',
  'very useful', 'labs', 'level', 'the instructor','texts?', 'additional comments'
  'the assignments', 'weaknesses?', 'strengths?', 'anyone interested in the topic',
- 'written comments', 'which least?'}
+ 'written comments', 'which least?', 'summary', 'challenging?', 'grading?'}
 
 AGREE_CATEGORIES = {'overall', 'the tests', 'the instructor', 'the assignments',
  'the readings', 'the homework assignments'}
@@ -87,9 +87,11 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
     course_info_re = re.compile('([A-Z]{4}) ([0-9]{5}): ?(.*)')
     num_responses_re = re.compile('esponses: ?([0-9]*)')
     identical_courses_re = re.compile('Identical Courses: ?(.+)')
-    section_year_re = re.compile('Section ([0-9][0-9]?) - ([a-zA-z]+) ([0-9]{4})')
+    section_year_re = re.compile('Section ([0-9][0-9]?[0-9]?) - ([a-zA-z]+) ([0-9]{4})')
     eval_list = []
+    q = None
     unique_id = 15000
+
 
     for e in evals[15000:]:
         e_list = e.split('\n') # splits evaluation into list of lines
@@ -142,7 +144,7 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     m = re.match('(.+) ([0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% ?[0-9]?[0-9]?[0-9]?%?)', line)
                     if m:
                         answers.append(m.group(0))
-                else:
+                elif len(line) >= 2:
                     answers.append(line)
                     responses_found += 1
 
@@ -151,9 +153,7 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     q = 'course_responses'
                     if not q in response_dict:
                         response_dict[q] = []
-                    in_question = True
-                    answers = []
-                    responses_found = 0
+                    in_question, answers, respones_found = True, [], 0
                     break
 
             for l in instructor_qs:
@@ -161,44 +161,55 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                     q = 'instructor_responses'
                     if not q in response_dict:
                         response_dict[q] = []
-                    in_question = True
-                    answers = []
-                    responses_found = 0
+                    in_question, answers, respones_found = True, [], 0
                     break
+
+            # This question is contingent upon the previous one being instructor related
+            # since an identical question is asked about the TAs sometimes
+            if q == 'the_instructor' and line == 'What could she/he modify to help you learn more?':
+                in_question = True
+                answers = []
+                responses_found = 0
 
             if line in {'Why?', 'Please explain:', 'In what way?'} and e_list[i-5] == YES_NO[0]:
                 q = 'course_responses'
                 if not q in response_dict:
                     response_dict[q] = []
-                in_question = True
-                answers = []
-                responses_found = 0
+                in_question, answers, respones_found = True, [], 0
 
             if line in {'Why?', 'Please explain:', 'In what way?'} and e_list[i-5] == YES_NO[1]:
                 q = 'instructor_responses'
                 if not q in response_dict:
                     response_dict[q] = []
-                in_question = True
-                answers = []
-                responses_found = 0
+                in_question, answers, respones_found = True, [], 0
 
+            # Extract 'numerical' data from agree/disagree responses
             if line.lower() in AGREE_DISAGREE_INDICATORS:
                 if e_list[i-1].lower() in AGREE_CATEGORIES:
                     q = e_list[i-1].replace(' ', '_')
                     if q == 'The_Homework_Assignments':
                         q = 'The_Assignments'
                     response_dict[q] = []
-                    in_question = True
+                    in_question, answers = True, []
                     in_num_question = True
-                    answers = []
-                if e_list[i-1].lower() == 'explain' and "rate instructor's ability" in e_list[i+1].lower():
+                elif e_list[i-1].lower() == 'explain' and "rate instructor's ability" in e_list[i+1].lower():
                     # Deals with a formating corner case in some language evaluations
                     q = 'The_Instructor'
-                    in_question = True
+                    in_question, answers = True, []
                     in_num_question = True
-                    answers = []
+                elif q == 'instructor_responses':
+                    q = 'The_Instructor'
+                    if not q in response_dict:
+                        response_dict[q] = []
+                    in_question, answers = True, []
+                    in_num_question = True
+                elif q == 'course_responses':
+                    q = 'The_Course'
+                    if not q in response_dict:
+                        response_dict[q] = []
+                    in_question, answers = True, []
+                    in_num_question = True
                 responses_found = 0
-
 
             # extracts the time info and yes/no answers, works independently of the mechanism above
             if re.match('How many hours per week (outside of attending required sessions )?did you spend on this course?', line) \
@@ -222,10 +233,10 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
                 except:
                     pass
 
-
+        print(response_dict)
         eval_list.append(response_dict)
-    return eval_list
 
+    return eval_list
 
 def stopping_cond(line, question_list, responses_found, num_responses):
     '''
@@ -240,6 +251,7 @@ def stopping_cond(line, question_list, responses_found, num_responses):
 
     if num_responses != 0 and responses_found == num_responses:
         # Don't trust response number if it says zero
+        # (this erroneous answer comes pops up occasionally in the database)
         return True
 
     if re.search('[0-9][0-9]? / [0-9][0-9]?[0-9]?%', line):
