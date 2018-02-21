@@ -73,6 +73,14 @@ def main(evals_file, all_question_file, course_q, instructor_q, agree_disagree_q
 
 
 def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
+    '''
+    Parse all of the evaluation text to locate all the desired features and extract them.
+
+    Inputs:
+        evaluation list, full list of questions, sub-lists of various types of q's
+    Returns:
+        list of dictionaries where each holds the information from one evaluation
+    '''
 
     # compile regular expressions to find info from header rows
     instructor_re = re.compile("Instructor\(s\): ?(.+)")
@@ -84,14 +92,14 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
     unique_id = 15000
 
     for e in evals[15000:]:
-        e_list = e.split('\n') # splits evaluation into lines
+        e_list = e.split('\n') # splits evaluation into list of lines
         in_question = False
         in_num_question = False
         answers = []
         response_dict = {'unique_id' : unique_id}
         unique_id += 1
 
-        for header_line in e_list[:10]: # deal seperately with header rows to avoid conflicts
+        for header_line in e_list[:10]: # deal seperately with header lines to avoid conflicts
 
             if course_info_re.match(header_line):
                 course_info_match = course_info_re.match(header_line)
@@ -119,6 +127,10 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
 
         responses_found = 0
         for i, line in enumerate(e_list):
+            
+            # Uses an on/off algorithm to extract responses to different types of questions
+            # "in_question" is True whenever we are within the responses to a question
+            # "in_num_question" further specifies that the question has numerical (agree...disagree) responses
 
             if in_question and stopping_cond(line, question_list, responses_found, num_responses):
                 response_dict[q].extend(answers)
@@ -128,7 +140,6 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
             if in_question:
                 if in_num_question:
                     m = re.match('(.+) ([0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% [0-9][0-9]?[0-9]?% ?[0-9]?[0-9]?[0-9]?%?)', line)
-                    # Fuck regular expressions
                     if m:
                         answers.append(m.group(0))
                 else:
@@ -217,6 +228,13 @@ def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
 
 
 def stopping_cond(line, question_list, responses_found, num_responses):
+    '''
+    This is a collection of situations where the question has ended and
+    "in_question" should be turned off.
+
+    Returns:
+        boolean
+    '''
     if '©' in line:
         return True
 
