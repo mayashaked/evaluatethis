@@ -74,19 +74,19 @@ def gen_evals(j, db):
     for ind, row in j.iterrows():
         eval = [ind, 'NA', 'NA', 'NA', 'NA', 'NA', 0, 'NA', 'NA']
         if type(row['instructor_score']) == float:
-            eval[1] = float(row['instructor_score'])
+            eval[1] = row['instructor_score']
         if type(row['assignments_score']) == float:
-            eval[2] = float(row['assignments_score'])
+            eval[2] = row['assignments_score']
         if type(row['overall_score']) == float:
-            eval[3] = float(row['overall_score'])
+            eval[3] = row['overall_score']
         if type(row['readings_score']) == float:
-            eval[4] = float(row['readings_score'])
+            eval[4] = row['readings_score']
         if type(row['tests_score']) == float:
-            eval[5] = float(row['tests_score'])
+            eval[5] = row['tests_score']
         eval[6] = row['num_responses']
         if type(row['recommend']) == list:
-            eval[7] = int(row['recommend'][0])
-            eval[8] = int(row['recommend'][1])
+            eval[7] = row['recommend'][0]
+            eval[8] = row['recommend'][1]
 
 
         evals.append(eval)
