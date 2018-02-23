@@ -29,8 +29,11 @@
 import re
 import pandas as pd
 import numpy as np
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 def add_score_cols(df):
+
+    sia = SentimentIntensityAnalyzer()
 
     df2 = df.copy().fillna(0)
     # Copy df to not change values while iterating over rows
@@ -60,6 +63,16 @@ def add_score_cols(df):
         if row[1].The_Readings:
             readings_score = compute_numerical_score(row[1].The_Readings, reverse_order)
             df.loc[row[0], 'readings_score'] = readings_score
+
+        if row[1].course_responses:
+            length = len(row[1].course_responses)
+            course_sentiment = round((np.mean([sia.polarity_scores(c)['compound'] for c in row[1].course_responses]) + 1)*50, 2)
+            df.loc[row[0], 'course_sentiment'] = round(weight_sent_scores(course_sentiment, length, 'course'), 1)
+
+        if row[1].instructor_responses:
+            length = len(row[1].instructor_responses)
+            inst_sentiment = round((np.mean([sia.polarity_scores(c)['compound'] for c in row[1].instructor_responses]) + 1)*50, 2)
+            df.loc[row[0], 'inst_sentiment'] = round(weight_sent_scores(inst_sentiment, length, 'inst'), 1)
 
 def compute_numerical_score(data, reverse_order):
 
@@ -96,6 +109,16 @@ def compute_numerical_score(data, reverse_order):
 
     return score
 
+def weight_sent_scores(raw_score, num_responses, category):
+
+    average = {'inst' : 75, 'course' : 62.5}
+
+    if num_responses in range(1,5):
+        normalized_raw_score = raw_score - average[category]
+        adjusted = normalized_raw_score * (1 - .15 * (5 - num_responses))
+        return adjusted + average[category]
+
+    return raw_score
 
 if __name__ == '__main__':
     main(df)
