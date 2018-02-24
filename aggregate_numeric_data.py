@@ -35,10 +35,18 @@ def add_score_cols(df):
 
     sia = SentimentIntensityAnalyzer()
 
-    df2 = df.copy().fillna(0)
-    # Copy df to not change values while iterating over rows
+    # initialize new columns, 'concat' them later
+    # we find this approach runs faster than adding values to df 1 at a time
+    emp = list([np.nan for a in range(len(df))])
+    inst_sentiment_col = pd.Series(emp, name = 'inst_sentiment')
+    assignments_score_col = pd.Series(emp, name = 'assignments_score')
+    readings_score_col = pd.Series(emp, name = 'readings_score_col')
+    instructor_score_col = pd.Series(emp, name = 'instructor_score')
+    tests_score_col = pd.Series(emp, name = 'tests_score')
+    course_sentiment_col = pd.Series(emp, name = 'course_sentiment')
+    overall_score_col = pd.Series(emp, name = 'overall_score')
 
-    for row in df2.iterrows():
+    for row in df.iterrows():
 
         # The following complication is neccesary because some physics
         # evaluations have agree...disagree rather than vice versa
@@ -48,31 +56,37 @@ def add_score_cols(df):
         if row[1].dept == 'PHSC':
             reverse_order = 'maybe'
 
-        if row[1].The_Instructor:
+        if type(row[1].The_Instructor) == list:
             instructor_score = compute_numerical_score(row[1].The_Instructor, reverse_order)
-            df.loc[row[0], 'instructor_score'] = instructor_score
-        if row[1].The_Assignments:
+            instructor_score_col[row[0]] = instructor_score
+        if type(row[1].The_Assignments) == list:
             assignments_score = compute_numerical_score(row[1].The_Assignments, reverse_order)
-            df.loc[row[0], 'assignments_score'] = assignments_score
-        if row[1].The_Tests:
+            assignments_score_col[row[0]] = assignments_score
+        if type(row[1].The_Tests) == list:
             tests_score = compute_numerical_score(row[1].The_Tests, reverse_order)
-            df.loc[row[0], 'tests_score'] = tests_score
-        if row[1].Overall:
+            tests_score_col[row[0]] = tests_score
+        if type(row[1].Overall) == list:
             overall_score = compute_numerical_score(row[1].Overall, reverse_order)
-            df.loc[row[0], 'overall_score'] = overall_score
-        if row[1].The_Readings:
+            overall_score_col[row[0]] = overall_score
+        if type(row[1].The_Readings) == list:
             readings_score = compute_numerical_score(row[1].The_Readings, reverse_order)
-            df.loc[row[0], 'readings_score'] = readings_score
+            readings_score_col[row[0]] = readings_score
 
-        if row[1].course_responses:
+        if type(row[1].course_responses) == list:
             length = len(row[1].course_responses)
-            course_sentiment = round((np.mean([sia.polarity_scores(c)['compound'] for c in row[1].course_responses]) + 1)*50, 2)
-            df.loc[row[0], 'course_sentiment'] = round(weight_sent_scores(course_sentiment, length, 'course'), 1)
+            if length >= 1:
+                course_sentiment = round((np.mean([sia.polarity_scores(c)['compound'] for c in row[1].course_responses]) + 1)*50, 2)
+                course_sentiment_col[row[0]] = round(weight_sent_scores(course_sentiment, length, 'course'), 1)
 
-        if row[1].instructor_responses:
+        if type(row[1].instructor_responses) == list:
             length = len(row[1].instructor_responses)
-            inst_sentiment = round((np.mean([sia.polarity_scores(c)['compound'] for c in row[1].instructor_responses]) + 1)*50, 2)
-            df.loc[row[0], 'inst_sentiment'] = round(weight_sent_scores(inst_sentiment, length, 'inst'), 1)
+            if length >= 1:
+                inst_sentiment = round((np.mean([sia.polarity_scores(c)['compound'] for c in row[1].instructor_responses]) + 1)*50, 2)
+                inst_sentiment_col[row[0]] = round(weight_sent_scores(inst_sentiment, length, 'inst'), 1)
+
+    return pd.concat([df, inst_sentiment_col, assignments_score_col, overall_score_col, \
+            instructor_score_col, tests_score_col, course_sentiment_col], axis = 1)
+
 
 def compute_numerical_score(data, reverse_order):
 
@@ -99,11 +113,12 @@ def compute_numerical_score(data, reverse_order):
         scores.append(weighted_score)
         denominator.append(possible_score)
 
-    if sum(denominator) == 0:
+    if sum(denominator) == 0 or not data:
         return np.nan
 
     score = round(sum(scores) / sum(denominator) * 100, 1)
 
+    # Make an educated guess that the order should be reversed, then recalculate
     if score <= 50 and reverse_order == 'maybe':
         return compute_numerical_score(data, True)
 
