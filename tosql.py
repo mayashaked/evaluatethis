@@ -1,31 +1,25 @@
-#-------------------------------------------------------------------------------
-# Name:        tosql
-# Purpose:     creates 'courses', 'profs', 'crosslists', and 'evals' SQL tables from our json data
-#
-# Author:      Maya Shaked
-#
-# Created:     21/02/2018
-#-------------------------------------------------------------------------------
-
-
 import pandas as pd
 import sqlite3
 import aggregate_numerical_data as agg_num
 
 EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
-SQL_DB_PATH = 'test2.db'
+SQL_DB_PATH = 'reevaluations.db'
 
 db = sqlite3.connect(SQL_DB_PATH)
 j1 = pd.read_json(EVALS_PART_1, convert_dates = False)
 j2 = pd.read_json(EVALS_PART_2, convert_dates = False)
 
 j = pd.concat([j1, j2])
+j = j.set_index('unique_id')
 
-agg_num.add_score_cols(j)
+j = agg_num.add_score_cols(j)
+
+j['year'] = j['year'].fillna(0).astype(int)
+j['section'] = j['section'].fillna(0).astype(int)
 
 j = j.where((pd.notnull(j)), None)
-j = j.set_index('unique_id')
+
 
 
 def gen_courses(j, db):
@@ -43,7 +37,6 @@ def gen_profs(j, db):
     for ind, row in j.iterrows():
         if type(row['instructors']) == list:
             for prof in row['instructors']:
-                prof.lower()
                 fullname = prof.split(', ')
                 profs.append([ind, fullname[0], fullname[-1]])
 
@@ -72,28 +65,51 @@ def gen_evals(j, db):
 
     evals = []
     for ind, row in j.iterrows():
-        eval = [ind, 'NA', 'NA', 'NA', 'NA', 'NA', 0, 'NA', 'NA']
-        if type(row['instructor_score']) == float:
-            eval[1] = row['instructor_score']
-        if type(row['assignments_score']) == float:
-            eval[2] = row['assignments_score']
-        if type(row['overall_score']) == float:
-            eval[3] = row['overall_score']
-        if type(row['readings_score']) == float:
-            eval[4] = row['readings_score']
-        if type(row['tests_score']) == float:
-            eval[5] = row['tests_score']
-        eval[6] = row['num_responses']
-        if type(row['recommend']) == list:
-            eval[7] = row['recommend'][0]
-            eval[8] = row['recommend'][1]
-
+        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None]
+        if row['instructor_score'] != None:
+            if row['instructor_score'] > -1:
+                eval[1] = row['instructor_score']
+        if row['assignments_score'] != None:
+            if row['assignments_score'] > -1:
+                eval[2] = row['assignments_score']
+        if row['overall_score'] != None:
+            if row['overall_score'] > -1:
+                eval[3] = row['overall_score']
+        if row['tests_score'] != None:
+            if row['tests_score'] > -1:
+                eval[4] = row['tests_score']
+        eval[5] = row['num_responses']
+        if row['low_time'] != None:
+            if row['low_time'] > -1:
+                eval[6] = row['low_time']
+        if row['avg_time'] != None:
+            if row['avg_time'] > -1:
+                eval[7] = row['avg_time']
+        if row['high_time'] != None:
+            if row['high_time'] > -1:
+                eval[8] = row['high_time']
+        if row['recommend'] == list:
+            eval[9] = row['recommend'][0]
+            eval[10] = row['recommend'][1]
+        if row['inst_sentiment'] != None:
+            if row['inst_sentiment'] > -1:
+                eval[11] = row['inst_sentiment']
+        if row['course_sentiment'] != None:
+            if row['course_sentiment'] > -1:
+                eval[12] = row['course_sentiment']
+        if row['readings_score_col'] != None:
+            if row['readings_score_col'] > -1:
+                eval[13] = row['readings_score_col']
 
         evals.append(eval)
 
     evals = pd.DataFrame(evals)
 
-    evals = evals.rename(columns = {0 : 'course_id', 1 : 'prof_score', 2 : 'ass_score', 3 : 'over_score' , 4 : 'read_score', 5 : 'test_score', 6 : 'num_responses', 7 : 'num_recommend', 8 : 'num_dont_recommend'})
+    evals = evals.rename(columns = {0 : 'course_id', 1 : 'prof_score', 2 : 'ass_score', \
+        3 : 'over_score' , 4 : 'test_score', 5 : 'num_responses', \
+        6 : 'low_time', 7 : 'avg_time', 8 : 'high_time', 9 : 'num_recommend', \
+        10 : 'num_dont_recommend', 11 : 'inst_sentiment', 12 : 'course_sentiment',
+        13 : 'read_score'})
 
     sqldbevals = evals.to_sql('evals', con = db, flavor = 'sqlite', index = False)
 
@@ -104,4 +120,6 @@ gen_courses(j, db)
 gen_profs(j, db)
 gen_crosslists(j, db)
 gen_evals(j, db)
+
+
 
