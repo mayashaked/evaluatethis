@@ -85,7 +85,7 @@ def add_score_cols(df):
                 inst_sentiment_col[row[0]] = round(weight_sent_scores(inst_sentiment, length, 'inst'), 1)
 
     return pd.concat([df, inst_sentiment_col, assignments_score_col, overall_score_col, \
-            instructor_score_col, tests_score_col, course_sentiment_col], axis = 1)
+            instructor_score_col, tests_score_col, course_sentiment_col, readings_score_col], axis = 1)
 
 
 def compute_numerical_score(data, reverse_order):
