@@ -13,12 +13,21 @@ j2 = pd.read_json(EVALS_PART_2, convert_dates = False)
 j = pd.concat([j1, j2])
 j = j.set_index('unique_id')
 
+#aggregate numerical scores re: tests, instructor, readings, assignments, as 
+#well as sentiment analysis scores
+
 j = agg_num.add_score_cols(j)
 
-j['year'] = j['year'].fillna(0).astype(int)
-j['section'] = j['section'].fillna(0).astype(int)
+j['year'] = j['year'].fillna(-1).astype(int)
+j['section'] = j['section'].fillna(-1).astype(int)
+j['course_number'] = j['course_number'].fillna(-1).astype(int)
+j['num_responses'] = j['num_responses'].fillna(-1).astype(int)
+j['low_time'] = j['low_time'].fillna(-1).astype(float)
+j['avg_time'] = j['avg_time'].fillna(-1).astype(float)
+j['high_time'] = j['high_time'].fillna(-1).astype(float)
 
-j = j.where((pd.notnull(j)), None)
+
+j = j.where(j != -1, None)
 
 
 
@@ -41,7 +50,7 @@ def gen_profs(j, db):
                 profs.append([ind, fullname[0], fullname[-1]])
 
     profs = pd.DataFrame(profs)
-    profs = profs.rename(columns = {0 : 'course_id', 1: "fn", 2 : "ln"})
+    profs = profs.rename(columns = {0 : 'course_id', 1: "ln", 2 : "fn"})
     sqldbprofs = profs.to_sql('profs', con = db, flavor = 'sqlite', index = False)
 
     pass
