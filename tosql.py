@@ -6,6 +6,7 @@ EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
 
+
 db = sqlite3.connect(SQL_DB_PATH)
 j1 = pd.read_json(EVALS_PART_1, convert_dates = False)
 j2 = pd.read_json(EVALS_PART_2, convert_dates = False)
@@ -97,9 +98,9 @@ def gen_evals(j, db):
         if row['high_time'] != None:
             if row['high_time'] > -1:
                 eval[8] = row['high_time']
-        if row['recommend'] == list:
-            eval[9] = row['recommend'][0]
-            eval[10] = row['recommend'][1]
+        if type(row['recommend']) == list:
+            eval[9] = int(row['recommend'][0])
+            eval[10] = int(row['recommend'][1])
         if row['inst_sentiment'] != None:
             if row['inst_sentiment'] > -1:
                 eval[11] = row['inst_sentiment']
@@ -124,11 +125,9 @@ def gen_evals(j, db):
 
     pass
 
-
-gen_courses(j, db)
-gen_profs(j, db)
-gen_crosslists(j, db)
-gen_evals(j, db)
-
-
+if __name__ == '__main__':
+    gen_courses(j, db)
+    gen_profs(j, db)
+    gen_crosslists(j, db)
+    gen_evals(j, db)
 
