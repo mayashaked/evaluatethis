@@ -8,19 +8,53 @@
 
 import sqlite3
 import os
-
 DATA_DIR = os.path.dirname(__file__)
-DATABASE_FILENAME = os.path.join(DATA_DIR, 'evaluations/reevaluations.db')
+DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
+
+ALL_EVAL_COLS = "evals.course_id,\
+evals.prof_score, \
+evals.ass_score, \
+evals.over_score, \
+evals.test_score, \
+evals.num_responses, \
+evals.low_time, \
+evals.avg_time, \
+evals.high_time, \
+evals.num_recommend, \
+num_dont_recommend, \
+evals.inst_sentiment, \
+evals.course_sentiment, \
+evals.read_score, \
+evals.good_inst, \
+evals.bad_inst"
+
+def testing_function():
+    db = sqlite3.connect(DATABASE_FILENAME)
+    return db
+
+def query_string_gen(args):
+    query_string = "SELECT " + ALL_EVAL_COLS
+    if "dept" in args and len(args) == 1:
+        query_string += " FROM courses JOIN evals JOIN crosslists ON courses.course_id = evals.course_id AND\
+        courses.course_id = crosslists.course_id WHERE courses.dept = ? OR crosslists.crosslist = ?" 
+
+    if "prof_ln" in args and len(args) == 1:
+        query_string += query_string += " FROM courses JOIN profs JOIN evals ON courses.course_id = profs.course_id \
+        AND courses.course_id = evals.course_id WHERE profs.ln = ?"
+
+    if "prof_fn" in args and len(args) == 1:
+        query_string += query_string += " FROM courses JOIN profs JOIN evals ON courses.course_id = profs.course_id \
+        AND courses.course_id = evals.course_id WHERE profs.fn = ?"
+
+    if "course_name" in args and len(args) == 1:
+        query_string += query_string += " FROM courses JOIN profs JOIN evals ON courses.course_id = profs.course_id \
+        AND courses.course_id = evals.course_id WHERE courses.course_name LIKE ?"
+
+    
 
 
-db = sqlite3.connect(DATABASE_FILENAME)
+    return query_string
 
-def find_by_dept():
-	query_string = "SELECT courses.dept, courses.course, evals.over_score, evals.prof_score, courses.year \
-	FROM courses JOIN profs JOIN evals ON profs.course_id = courses.course_id AND \
-	profs.course_id = evals.course_id WHERE courses.year < 2004;"
-	return query_string
+#def find_by_course_name:
 
-def find_by_course_name:
-	
 
