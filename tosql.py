@@ -75,7 +75,7 @@ def gen_evals(j, db):
 
     evals = []
     for ind, row in j.iterrows():
-        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None]
+        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None, None, None]
         if row['instructor_score'] != None:
             if row['instructor_score'] > -1:
                 eval[1] = row['instructor_score']
@@ -110,6 +110,10 @@ def gen_evals(j, db):
         if row['readings_score_col'] != None:
             if row['readings_score_col'] > -1:
                 eval[13] = row['readings_score_col']
+        if type(row['good_instructor']) == list:
+            eval[14] = int(row['good_instructor'][0])
+            eval[15] = int(row['good_instructor'][1])
+
 
         evals.append(eval)
 
@@ -119,15 +123,15 @@ def gen_evals(j, db):
         3 : 'over_score' , 4 : 'test_score', 5 : 'num_responses', \
         6 : 'low_time', 7 : 'avg_time', 8 : 'high_time', 9 : 'num_recommend', \
         10 : 'num_dont_recommend', 11 : 'inst_sentiment', 12 : 'course_sentiment',
-        13 : 'read_score'})
+        13 : 'read_score', 14 : 'good_inst', 15 : 'bad_inst'})
 
     sqldbevals = evals.to_sql('evals', con = db, flavor = 'sqlite', index = False)
 
     pass
 
-if __name__ == '__main__':
-    gen_courses(j, db)
-    gen_profs(j, db)
-    gen_crosslists(j, db)
-    gen_evals(j, db)
+
+gen_courses(j, db)
+gen_profs(j, db)
+gen_crosslists(j, db)
+gen_evals(j, db)
 
