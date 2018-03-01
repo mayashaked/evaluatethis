@@ -49,6 +49,8 @@ def gen_profs(j, db):
             for prof in row['instructors']:
                 fullname = prof.split(', ')
                 profs.append([ind, fullname[0], fullname[-1]])
+        else:
+            profs.append([ind, None, None])
 
     profs = pd.DataFrame(profs)
     profs = profs.rename(columns = {0 : 'course_id', 1: "ln", 2 : "fn"})
@@ -64,6 +66,8 @@ def gen_crosslists(j, db):
             x = row['identical_courses'].split(', ')
             for course in x:
                 crosslists.append([ind, course])
+        else:
+            crosslists.append([ind, None])
                 
     crosslists = pd.DataFrame(crosslists)
     crosslists = crosslists.rename(columns = {0 : 'course_id', 1 : 'crosslist'})
