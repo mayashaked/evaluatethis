@@ -28,33 +28,51 @@ evals.read_score, \
 evals.good_inst, \
 evals.bad_inst"
 
-def testing_function():
+def testing_function(args):
     db = sqlite3.connect(DATABASE_FILENAME)
-    return db
+    c = db.cursor()
+    query_string = query_string_gen(args)
+    r = db.execute(query_string)
+    return r.fetchall()    
 
-def query_string_gen(args):
-    query_string = "SELECT " + ALL_EVAL_COLS
-    if "dept" in args and len(args) == 1:
-        query_string += " FROM courses JOIN evals JOIN crosslists ON courses.course_id = evals.course_id AND\
-        courses.course_id = crosslists.course_id WHERE courses.dept = ? OR crosslists.crosslist = ?" 
 
-    if "prof_ln" in args and len(args) == 1:
-        query_string += query_string += " FROM courses JOIN profs JOIN evals ON courses.course_id = profs.course_id \
-        AND courses.course_id = evals.course_id WHERE profs.ln = ?"
+def table_join_string(args, query_string):
+    query_string += " FROM evals JOIN courses on evals.course_id = courses.course_id"
 
-    if "prof_fn" in args and len(args) == 1:
-        query_string += query_string += " FROM courses JOIN profs JOIN evals ON courses.course_id = profs.course_id \
-        AND courses.course_id = evals.course_id WHERE profs.fn = ?"
-
-    if "course_name" in args and len(args) == 1:
-        query_string += query_string += " FROM courses JOIN profs JOIN evals ON courses.course_id = profs.course_id \
-        AND courses.course_id = evals.course_id WHERE courses.course_name LIKE ?"
-
-    
-
+    if "dept" in args:
+        query_string += " JOIN crosslists on courses.course_id = crosslists.course_id"
+    if "prof_fn" in args or "prof_ln" in args:
+        query_string += " JOIN profs on evals.course_id = profs.course_id"
 
     return query_string
 
-#def find_by_course_name:
+
+
+def query_string_gen(args):
+    query_string = "SELECT " + ALL_EVAL_COLS
+    query_string += ", courses.dept, courses.course, courses.course_number, profs.fn, profs.ln"
+    query_string = table_join_string(args, query_string)
+    query_string += " WHERE"
+
+    #all the possible arguments
+    query_list = []
+    if "prof_ln" in args:
+        query_list.append(" profs.ln = " + "'" + args["prof_ln"] + "'")
+    if "prof_fn" in args:
+        query_list.append(" profs.fn = " + "'" + args["prof_fn"] + "'")
+    if "course_name" in args:
+        query_list.append(" courses.course_name = " + "'" + args["course_name"] + "'")
+    if "dept" in args:
+        query_list.append(" (courses.dept = " + "'" + args["dept"] + "'" + " OR crosslists.crosslist = " + "'" + args["dept"] + "'" ")")
+
+    for arg in query_list:
+        query_string += arg
+        query_string += " AND"
+
+    query_string = query_string[:-4]
+    query_string += ";"
+
+    return query_string
+
 
 
