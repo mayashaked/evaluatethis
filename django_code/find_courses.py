@@ -25,7 +25,7 @@ evals.low_time, \
 evals.avg_time, \
 evals.high_time, \
 evals.num_recommend, \
-num_dont_recommend, \
+evals.num_dont_recommend, \
 evals.inst_sentiment, \
 evals.course_sentiment, \
 evals.read_score, \
