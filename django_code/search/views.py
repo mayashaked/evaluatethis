@@ -3,6 +3,7 @@ import traceback
 import sys
 import csv
 import os
+import pandas as pd
 
 from functools import reduce
 from operator import and_
@@ -21,25 +22,21 @@ COLUMN_NAMES = dict(
 )
 
 
-def _valid_result(res):
-    """Validate results returned by find_courses."""
-    (HEADER, RESULTS) = [0, 1]
-    ok = (isinstance(res, (tuple, list)) and
-          len(res) == 2 and
-          isinstance(res[HEADER], (tuple, list)) and
-          isinstance(res[RESULTS], (tuple, list)))
-    if not ok:
-        return False
+# def _valid_result(res):
+#     """Validate results returned by find_courses."""
+#     (HEADER, RESULTS) = [0, 1]
+#     ok = (isinstance(res, (tuple, list)) and
+#           len(res) == 2 and
+#           isinstance(res[HEADER], (tuple, list)) and
+#           isinstance(res[RESULTS], (tuple, list)))
+#     if not ok:
+#         return False
 
-    n = len(res[HEADER])
+#     n = len(res[HEADER])
 
-    def _valid_row(row):
-        return isinstance(row, (tuple, list)) and len(row) == n
-    return reduce(and_, (_valid_row(x) for x in res[RESULTS]), True)
-
-
-def _valid_military_time(time):
-    return (0 <= time < 2400) and (time % 100 < 60)
+#     def _valid_row(row):
+#         return isinstance(row, (tuple, list)) and len(row) == n
+#     return reduce(and_, (_valid_row(x) for x in res[RESULTS]), True)
 
 
 def _load_column(filename, col=0):
@@ -63,7 +60,6 @@ DEPTS = _build_dropdown([None] + _load_res_column('dept_list.csv'))
 COURSE_NUMS = _build_dropdown([None] + _load_res_column('course_num_list.csv'))
 PROFS_FN = _build_dropdown([None] + _load_res_column('prof_fn_list.csv'))
 PROFS_LN = _build_dropdown([None] + _load_res_column('prof_ln_list.csv'))
-
 
 
 class SearchForm_course(forms.Form):
@@ -129,22 +125,21 @@ def home(request):
         context['result'] = None
         context['err'] = res
         result = None
-    elif not _valid_result(res):
-        context['result'] = None
-        context['err'] = ('Return of find_courses has the wrong data type. '
-                          'Should be a tuple of length 4 with one string and '
-                          'three lists.')
+    # elif not _valid_result(res):
+    #     context['result'] = None
+    #     context['err'] = ('Return of find_courses has the wrong data type. '
+    #                       'Should be a tuple of length 4 with one string and '
+    #                       'three lists.')
     
     else: #create outputs (ex. tables and graphs)
-        columns, result = res
-        # Wrap in tuple if result is not already
-        if result and isinstance(result[0], str):
-            result = [(r,) for r in result]
-
+        context['columns'] = res.columns
+        df_rows = res.values.tolist()
+        result = []
+        for row in df_rows:
+            result.append(tuple(row))
         context['result'] = result
-        context['num_results'] = len(result)
-        context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
-
+        context['num_results'] = len(res)
+   
     context['form_course'] = form_course
     context['form_prof'] = form_prof
     return render(request, 'index.html', context)

@@ -2,6 +2,7 @@
 
 import sqlite3
 import os
+import pandas as pd
 
 # Use this filename for the database
 DATA_DIR = os.path.dirname(__file__)
@@ -23,17 +24,13 @@ def find_courses(args_from_ui):
     containing query results.
     '''
     if not args_from_ui:
-        return ([],[])
- 
-    db = sqlite3.connect(DATABASE_FILENAME)
-    c = db.cursor()
-    query, args = create_query(args_from_ui)
-    r = c.execute(query, args)
-    courses = r.fetchall()
-    header = get_header(c)
-    db.close()
+        return pd.DataFrame()
 
-    return header, courses
+    db = sqlite3.connect(DATABASE_FILENAME)
+    query = create_query(args_from_ui)
+    evals_df = pd.read_sql_query(query, db)
+
+    return evals_df
 
 
 def create_query(args_from_ui):
@@ -54,24 +51,24 @@ def create_query(args_from_ui):
         # searching by course
             query_string = "SELECT evals.* FROM courses JOIN evals JOIN \
                 crosslists ON courses.course_id = evals.course_id AND \
-                courses.course_id = crosslists.course_id WHERE courses.dept = \
-                ? AND courses.course_number = ?"
-            arg_array = [args_from_ui['dept'], args_from_ui['course_num']]
+                courses.course_id = crosslists.course_id WHERE courses.dept = '"\
+                + args_from_ui['dept'] + "' AND courses.course_number = '" + \
+                args_from_ui['course_num'] + "';"
         elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
             query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals \
                 ON courses.course_id = profs.course_id AND courses.course_id =\
-                evals.course_id WHERE profs.fn = ? AND profs.ln = ?"
-            arg_array = [args_from_ui['prof_fn'], args_from_ui['prof_ln']]
+                evals.course_id WHERE profs.fn = '" + args_from_ui['prof_fn'] +\
+                "' AND profs.ln = '" + args_from_ui['prof_ln'] + "';"
     elif len(args_from_ui) == 4: #searching by course and professor
-        query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals JOIN\
+         query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals JOIN\
             crosslists ON courses.course_id = evals.course_id AND \
             courses.course_id = crosslists.course_id AND courses.course_id = \
-            profs.course_id WHERE courses.dept = ? AND courses.course_number \
-            = ? AND profs.fn = ? AND profs.ln = ?" 
-        arg_array = [args_from_ui['dept'], args_from_ui['course_num'],
-            args_from_ui['prof_fn'], args_from_ui['prof_ln']]
+            profs.course_id WHERE courses.dept = '" + args_from_ui['dept'] + \
+            "' AND courses.course_number = '" + args_from_ui['course_num'] + \
+            "' AND profs.fn = '" + args_from_ui['prof_fn'] + \
+            "' AND profs.ln = '" + args_from_ui['prof_ln'] + "';"
     
-    return query_string, arg_array
+    return query_string
 
 
 def get_header(cursor):
