@@ -19,15 +19,12 @@ def pre_process(evalspart1, evalspart2, sqldbpath):
     #well as sentiment analysis scores
 
     j = agg_num.add_score_cols(j)
-
-    j['year'] = j['year'].fillna(-1).astype(int)
-    j['section'] = j['section'].fillna(-1).astype(int)
-    j['course_number'] = j['course_number'].fillna(-1).astype(int)
-    j['num_responses'] = j['num_responses'].fillna(-1).astype(int)
-    j['low_time'] = j['low_time'].fillna(-1).astype(float)
-    j['avg_time'] = j['avg_time'].fillna(-1).astype(float)
-    j['high_time'] = j['high_time'].fillna(-1).astype(float)
-
+    
+    for x in [j['year'], j['section'], j['course_number'], j['num_responses']]:
+        x = x.fillna(-1).astype(int)
+        
+    for x in [j['low_time'], j['avg_time'], j['high_time']]:
+        x = x.fillna(-1).astype(float)
 
     j = j.where(j != -1, None)
     
