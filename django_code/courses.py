@@ -2,8 +2,6 @@
 
 import sqlite3
 import os
-import pandas as pd
-
 
 # Use this filename for the database
 DATA_DIR = os.path.dirname(__file__)
@@ -26,25 +24,19 @@ def find_courses(args_from_ui):
     '''
     if not args_from_ui:
         return ([],[])
-
+ 
     db = sqlite3.connect(DATABASE_FILENAME)
-    query = create_query(args_from_ui)
-    df = pd.read_sql_query(query, db)
+    c = db.cursor()
+    query, args = create_query(args_from_ui)
+    r = c.execute(query, args)
+    courses = r.fetchall()
+    header = get_header(c)
+    db.close()
 
-    # SQLite3 code  
-    # db = sqlite3.connect(DATABASE_FILENAME)
-    # c = db.cursor()
-    # query, args = create_query(args_from_ui, c)
-    # r = c.execute(query, args)
-    # courses = r.fetchall()
-    # header = get_header(c)
-    # db.close()
+    return header, courses
 
-    #return header, courses
-    return df
 
 def create_query(args_from_ui):
-# def create_query(args_from_ui, c):
     '''
     Takes a dictionary containing search criteria and returns a
     search query
@@ -57,53 +49,29 @@ def create_query(args_from_ui):
         (string): SQL search query
         arg_array (list of strings and ints): argument array
     '''
-
     if len(args_from_ui) == 2:
         if 'dept' in args_from_ui and 'course_num' in args_from_ui:
         # searching by course
             query_string = "SELECT evals.* FROM courses JOIN evals JOIN \
                 crosslists ON courses.course_id = evals.course_id AND \
-                courses.course_id = crosslists.course_id WHERE courses.dept = "\
-                + args_from_ui["dept"] + " AND courses.course_number = " + 
-                args_from_ui["course_num"] + ";"
+                courses.course_id = crosslists.course_id WHERE courses.dept = \
+                ? AND courses.course_number = ?"
+            arg_array = [args_from_ui['dept'], args_from_ui['course_num']]
         elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
             query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals \
                 ON courses.course_id = profs.course_id AND courses.course_id =\
                 evals.course_id WHERE profs.fn = ? AND profs.ln = ?"
-            arg_array = ['prof_fn', 'prof_ln']
+            arg_array = [args_from_ui['prof_fn'], args_from_ui['prof_ln']]
     elif len(args_from_ui) == 4: #searching by course and professor
         query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals JOIN\
             crosslists ON courses.course_id = evals.course_id AND \
             courses.course_id = crosslists.course_id AND courses.course_id = \
-            profs.course_id WHERE courses.dept = ? AND crosslists.crosslist = \
-            ? AND courses.course_number = ? AND profs.fn = ? AND profs.ln = ?" 
-        arg_array = ['dept', 'course_num', 'course_num', 'prof_fn', 'prof_ln']
+            profs.course_id WHERE courses.dept = ? AND courses.course_number \
+            = ? AND profs.fn = ? AND profs.ln = ?" 
+        arg_array = [args_from_ui['dept'], args_from_ui['course_num'],
+            args_from_ui['prof_fn'], args_from_ui['prof_ln']]
     
-    return query_string
-
-    # SQLite3 code
-    # if len(args_from_ui) == 2:
-    #     if 'dept' in args_from_ui and 'course_num' in args_from_ui:
-    #     # searching by course
-    #         query_string = "SELECT evals.* FROM courses JOIN evals JOIN \
-    #             crosslists ON courses.course_id = evals.course_id AND \
-    #             courses.course_id = crosslists.course_id WHERE courses.dept = \
-    #             ? AND courses.course_number = ?"
-    #         arg_array = [args_from_ui["dept"], args_from_ui["course_num"]]
-    #     elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
-    #         query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals \
-    #             ON courses.course_id = profs.course_id AND courses.course_id =\
-    #             evals.course_id WHERE profs.fn = ? AND profs.ln = ?"
-    #         arg_array = ['prof_fn', 'prof_ln']
-    # elif len(args_from_ui) == 4: #searching by course and professor
-    #     query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals JOIN\
-    #         crosslists ON courses.course_id = evals.course_id AND \
-    #         courses.course_id = crosslists.course_id AND courses.course_id = \
-    #         profs.course_id WHERE courses.dept = ? AND crosslists.crosslist = \
-    #         ? AND courses.course_number = ? AND profs.fn = ? AND profs.ln = ?" 
-    #     arg_array = ['dept', 'course_num', 'course_num', 'prof_fn', 'prof_ln']
-    
-    # return query_string, arg_array
+    return query_string, arg_array
 
 
 def get_header(cursor):
