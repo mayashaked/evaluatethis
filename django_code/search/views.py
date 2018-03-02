@@ -3,6 +3,7 @@ import traceback
 import sys
 import csv
 import os
+import pandas as pd
 
 from functools import reduce
 from operator import and_
@@ -65,17 +66,16 @@ PROFS_FN = _build_dropdown([None] + _load_res_column('prof_fn_list.csv'))
 PROFS_LN = _build_dropdown([None] + _load_res_column('prof_ln_list.csv'))
 
 
-class SearchForm(forms.Form):
-    # query = forms.CharField(
-    #     label='Search terms',
-    #     help_text='e.g. mathematics',
-    #     required=False) ## LEAVING AS EXAMPLE
+class SearchForm_course(forms.Form):
     dept = forms.ChoiceField(label='Department', choices=DEPTS, required=False)
     course_num = forms.ChoiceField(label='Course Number', choices=COURSE_NUMS, required=False)
+
+
+class SearchForm_prof(forms.Form):
     prof_fn = forms.ChoiceField(label='Professor\'s First Name', choices=PROFS_FN, required=False)
     prof_ln = forms.ChoiceField(label='Professor\'s Last Name', choices=PROFS_LN, required=False)
     show_args = forms.BooleanField(label='Show args_to_ui',
-                                   required=False)
+                                   required=False) # delete this in end
 
 
 def home(request):
@@ -83,28 +83,32 @@ def home(request):
     res = None
     if request.method == 'GET':
         # create a form instance and populate it with data from the request:
-        form = SearchForm(request.GET)
+        form_course = SearchForm_course(request.GET)
+        form_prof = SearchForm_prof(request.GET)
         # check whether it's valid:
-        if form.is_valid():
+        args = {}
+        if form_course.is_valid():
             # Convert form data to an args dictionary for find_courses
-            args = {}
-            dept = form.cleaned_data['dept']
+            dept = form_course.cleaned_data['dept']
             if dept:
                 args['dept'] = dept
-            course_num = form.cleaned_data['course_num']
+            course_num = form_course.cleaned_data['course_num']
             if course_num:
                 args['course_num'] = course_num
-            prof_fn = form.cleaned_data['prof_fn']
+            
+        if form_prof.is_valid():   
+            prof_fn = form_prof.cleaned_data['prof_fn']
             if prof_fn:
                 args['prof_fn'] = prof_fn
-            prof_ln = form.cleaned_data['prof_ln']
+            prof_ln = form_prof.cleaned_data['prof_ln']
             if prof_ln:
                 args['prof_ln'] = prof_ln
-            if form.cleaned_data['show_args']:
+            if form_prof.cleaned_data['show_args']:
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
 
             try:
-                res = find_courses(args) # result of find_courses.py
+                res = find_courses(args) # result of courses.py
+
             except Exception as e:
                 print('Exception caught')
                 bt = traceback.format_exception(*sys.exc_info()[:3])
@@ -119,27 +123,31 @@ def home(request):
         form = SearchForm()
 
     # Handle different responses of res
-    if res is None:
-        context['result'] = None
-    elif isinstance(res, str):
-        context['result'] = None
-        context['err'] = res
-        result = None
-    elif not _valid_result(res):
-        context['result'] = None
-        context['err'] = ('Return of find_courses has the wrong data type. '
-                          'Should be a tuple of length 4 with one string and '
-                          'three lists.')
+    # if res is None:
+    #     context['result'] = None
+    # elif isinstance(res, str):
+    #     context['result'] = None
+    #     context['err'] = res
+    #     result = None
+    # elif not _valid_result(res):
+    #     context['result'] = None
+    #     context['err'] = ('Return of find_courses has the wrong data type. '
+    #                       'Should be a tuple of length 4 with one string and '
+    #                       'three lists.')
     
-    else: #create outputs (ex. tables and graphs)
-        columns, result = res
-        # Wrap in tuple if result is not already
-        if result and isinstance(result[0], str):
-            result = [(r,) for r in result]
+    #else: #create outputs (ex. tables and graphs)
 
-        context['result'] = result
-        context['num_results'] = len(result)
-        context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
+        # columns, result = res
+        # # Wrap in tuple if result is not already
+        # if result and isinstance(result[0], str):
+        #     result = [(r,) for r in result]
 
-    context['form'] = form
+        # context['result'] = result
+        # context['num_results'] = len(result)
+        # context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
+
+    html_table = res.to_html()
+    context['form_course'] = form_course
+    context['form_prof'] = form_prof
+    context['html_table'] = html_table
     return render(request, 'index.html', context)
