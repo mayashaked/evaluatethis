@@ -8,10 +8,12 @@
 
 import sqlite3
 import os
+import pandas as pd
+
 DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 
-ALL_EVAL_COLS = "evals.course_id,\
+ALL_EVAL_COLS = "evals.course_id, \
 evals.prof_score, \
 evals.ass_score, \
 evals.over_score, \
@@ -33,7 +35,10 @@ def testing_function(args):
     c = db.cursor()
     query_string = query_string_gen(args)
     r = db.execute(query_string)
-    return r.fetchall()    
+    df = pd.DataFrame(r.fetchall())
+    colnames = ALL_EVAL_COLS.split() + "courses.dept, courses.course, courses.course_number, profs.fn, profs.ln".split()
+    df.columns = colnames
+    return df
 
 
 def table_join_string(args, query_string):
