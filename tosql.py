@@ -6,7 +6,7 @@ EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
 
-    def pre_process(evalspart1, evalspart2, sqldbpath):
+def pre_process(evalspart1, evalspart2, sqldbpath):
 
     db = sqlite3.connect(sqldbpath)
     j1 = pd.read_json(evalspart1, convert_dates = False)
