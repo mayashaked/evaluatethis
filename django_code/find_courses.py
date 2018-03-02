@@ -1,3 +1,5 @@
+#REMOVE THIS FILE
+
 # code to create sql query to find courses that match the inputs
 # can use pa2 code
 
