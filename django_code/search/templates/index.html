@@ -8,12 +8,20 @@
     <body>
         <div id="header">
             <h1>Course Re-evaluations</h1>
+            <h1>Search by course and/or professor!</h1>
         </div>
         <div class="frame">
             <form method="get">
                 {% csrf_token %}
+                <table class="form_course">
+                    {{ form_course }}
+                </table>
+                <p>and/or</p>
+                <table class="form_prof">
+                    {{ form_prof.as_table }}
+                </table>
                 <table class="form">
-                {{ form }}
+                    {{ form.as_table }}
                 </table>
                 <input type="submit" value="Submit" />
             </form>
@@ -30,8 +38,6 @@
             {{ err|safe }}
         </div>
         {% endif %}
-
-
 
         <div class="frame">
             {% if result != None %}

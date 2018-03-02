@@ -3,7 +3,6 @@ import traceback
 import sys
 import csv
 import os
-import pandas as pd
 
 from functools import reduce
 from operator import and_
@@ -66,6 +65,7 @@ PROFS_FN = _build_dropdown([None] + _load_res_column('prof_fn_list.csv'))
 PROFS_LN = _build_dropdown([None] + _load_res_column('prof_ln_list.csv'))
 
 
+
 class SearchForm_course(forms.Form):
     dept = forms.ChoiceField(label='Department', choices=DEPTS, required=False)
     course_num = forms.ChoiceField(label='Course Number', choices=COURSE_NUMS, required=False)
@@ -123,31 +123,28 @@ def home(request):
         form = SearchForm()
 
     # Handle different responses of res
-    # if res is None:
-    #     context['result'] = None
-    # elif isinstance(res, str):
-    #     context['result'] = None
-    #     context['err'] = res
-    #     result = None
-    # elif not _valid_result(res):
-    #     context['result'] = None
-    #     context['err'] = ('Return of find_courses has the wrong data type. '
-    #                       'Should be a tuple of length 4 with one string and '
-    #                       'three lists.')
+    if res is None:
+        context['result'] = None
+    elif isinstance(res, str):
+        context['result'] = None
+        context['err'] = res
+        result = None
+    elif not _valid_result(res):
+        context['result'] = None
+        context['err'] = ('Return of find_courses has the wrong data type. '
+                          'Should be a tuple of length 4 with one string and '
+                          'three lists.')
     
-    #else: #create outputs (ex. tables and graphs)
+    else: #create outputs (ex. tables and graphs)
+        columns, result = res
+        # Wrap in tuple if result is not already
+        if result and isinstance(result[0], str):
+            result = [(r,) for r in result]
 
-        # columns, result = res
-        # # Wrap in tuple if result is not already
-        # if result and isinstance(result[0], str):
-        #     result = [(r,) for r in result]
+        context['result'] = result
+        context['num_results'] = len(result)
+        context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
 
-        # context['result'] = result
-        # context['num_results'] = len(result)
-        # context['columns'] = [COLUMN_NAMES.get(col, col) for col in columns]
-
-    html_table = res.to_html()
     context['form_course'] = form_course
     context['form_prof'] = form_prof
-    context['html_table'] = html_table
     return render(request, 'index.html', context)
