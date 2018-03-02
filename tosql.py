@@ -6,29 +6,32 @@ EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
 
+    def pre_process(evalspart1, evalspart2, sqldbpath):
 
-db = sqlite3.connect(SQL_DB_PATH)
-j1 = pd.read_json(EVALS_PART_1, convert_dates = False)
-j2 = pd.read_json(EVALS_PART_2, convert_dates = False)
+    db = sqlite3.connect(sqldbpath)
+    j1 = pd.read_json(evalspart1, convert_dates = False)
+    j2 = pd.read_json(evalspart2, convert_dates = False)
 
-j = pd.concat([j1, j2])
-j = j.set_index('unique_id')
+    j = pd.concat([j1, j2])
+    j = j.set_index('unique_id')
 
-#aggregate numerical scores re: tests, instructor, readings, assignments, as 
-#well as sentiment analysis scores
+    #aggregate numerical scores re: tests, instructor, readings, assignments, as 
+    #well as sentiment analysis scores
 
-j = agg_num.add_score_cols(j)
+    j = agg_num.add_score_cols(j)
 
-j['year'] = j['year'].fillna(-1).astype(int)
-j['section'] = j['section'].fillna(-1).astype(int)
-j['course_number'] = j['course_number'].fillna(-1).astype(int)
-j['num_responses'] = j['num_responses'].fillna(-1).astype(int)
-j['low_time'] = j['low_time'].fillna(-1).astype(float)
-j['avg_time'] = j['avg_time'].fillna(-1).astype(float)
-j['high_time'] = j['high_time'].fillna(-1).astype(float)
+    j['year'] = j['year'].fillna(-1).astype(int)
+    j['section'] = j['section'].fillna(-1).astype(int)
+    j['course_number'] = j['course_number'].fillna(-1).astype(int)
+    j['num_responses'] = j['num_responses'].fillna(-1).astype(int)
+    j['low_time'] = j['low_time'].fillna(-1).astype(float)
+    j['avg_time'] = j['avg_time'].fillna(-1).astype(float)
+    j['high_time'] = j['high_time'].fillna(-1).astype(float)
 
 
-j = j.where(j != -1, None)
+    j = j.where(j != -1, None)
+    
+    return j, db
 
 
 
@@ -133,9 +136,10 @@ def gen_evals(j, db):
 
     pass
 
-
-gen_courses(j, db)
-gen_profs(j, db)
-gen_crosslists(j, db)
-gen_evals(j, db)
+if __name__ == '__main__':
+    j, db = pre_process(EVALS_PART_1, EVALS_PART_2, SQL_DB_PATH)
+    gen_courses(j, db)
+    gen_profs(j, db)
+    gen_crosslists(j, db)
+    gen_evals(j, db)
 
