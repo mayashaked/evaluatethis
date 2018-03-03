@@ -1,5 +1,5 @@
 # code to create sql query to find courses that match the inputs
-
+#make sure to actually use crosslists in sql query
 import sqlite3
 import os
 import pandas as pd
@@ -11,8 +11,12 @@ import matplotlib.pyplot as plt
 DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 
-
+'''
 def get_wc(args_from_ui):
+
+    if not args_from_ui:
+        return pd.DataFrame()
+
     db = sqlite3.connect(DATABASE_FILENAME)
     query = create_query(args_from_ui)
     evals_df = pd.read_sql_query(query, db)
@@ -34,17 +38,21 @@ def get_wc(args_from_ui):
             query += 'course_id = ' + str(_id) + ' OR '
         query = query[:-4]
 
-    df = pd.read_sql_query(query, db)
-    evals = list(df['course_resp'])
-    clean = ''
-    for eval in evals:
-        eval = eval.lower()
-        eval = eval.strip('"@#$%^&*)(_+=][}{:;.,')
-        clean += eval + ' '
+    if len(args_from_ui) == 2 or len(args_from_ui) == 4:
+        df = pd.read_sql_query(query, db)
+        evals = list(df['course_resp'])
+        clean = ''
+        for eval in evals:
+            if eval != None:
+                eval = eval.lower()
+                eval = eval.strip('"@#$%^&*)(_+=][}{:;.,')
+                clean += eval + ' '
 
-    wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 500, height = 100).generate(clean)
+        wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 500, height = 100).generate(clean)
 
-    return wordcloud
+        return wordcloud
+'''
+
 
 
 def find_courses(args_from_ui):
@@ -88,7 +96,7 @@ def create_query(args_from_ui):
     if len(args_from_ui) == 2:
         if 'dept' in args_from_ui and 'course_num' in args_from_ui:
         # searching by course
-            query_string = "SELECT evals.* FROM courses JOIN evals JOIN \
+            query_string = "SELECT courses.course_id, evals.* FROM courses JOIN evals JOIN \
                 crosslists ON courses.course_id = evals.course_id AND \
                 courses.course_id = crosslists.course_id WHERE courses.dept = '"\
                 + args_from_ui['dept'] + "' AND courses.course_number = '" + \
