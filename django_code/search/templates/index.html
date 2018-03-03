@@ -2,123 +2,69 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Course Re-evaluations</title>
+        <title>Course Catalog Search</title>
         <link rel="stylesheet" type="text/css" href="{% static "/main.css" %}" />
-<style>
-.dropbtn {
-    background-color: #003366;
-    color: white;
-    padding: 16px;
-    font-size: 16px;
-    border: none;
-    cursor: pointer;
-}
-
-.dropbtn:hover, .dropbtn:focus {
-    background-color: #003366;
-}
-
-#myInput {
-    border-box: box-sizing;
-    background-image:
-    background-position: 14px 12px;
-    background-repeat: no-repeat;
-    font-size: 16px;
-    padding: 14px 20px 12px 45px;
-    border: none;
-    border-bottom: 1px solid #ddd;
-}
-
-#myInput:focus {outline: 3px solid #ddd;}
-
-.department {
-    position: relative;
-    display: inline-block;
-}
-
-.department-content {
-    display: none;
-    position: absolute;
-    background-color: #f6f6f6;
-    min-width: 230px;
-    overflow: auto;
-    border: 1px solid #ddd;
-    z-index: 1;
-}
-
-.department-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.department a:hover {background-color: #ddd}
-
-.show {display:block;}
-</style>
     </head>
     <body>
-<h2>Course Re-evaluations</h2>
-<p>Choose your selections by clicking in the dropdown menu or typing in the search bar.</p>
+        <div id="header">
+            <h1>Course Re-evaluations</h1>
+            <h1>Search by course and/or professor!</h1>
+        </div>
+        <div class="frame">
+            <form method="get">
+                {% csrf_token %}
+                <table class="form_course_dept">
+                    {{ form_course_dept }}
+                </table>
+                <table class="form_course_num">
+                    {{ form_course_num }}
+                </table>                
+                <p>and/or</p>
+                <table class="form_prof_fn">
+                    {{ form_prof_fn }}
+                </table>
+                <table class="form_prof_ln">
+                    {{ form_prof_ln }}
+                </table>
+                <table class="form">
+                    {{ form.as_table }}
+                </table>
+                <input type="submit" value="Submit" />
+            </form>
+        </div>
 
-<div class="department">
-<button onclick="myFunction()" class="dropbtn">Department</button>
-  <div id="mydepartment" class="department-content">
-    <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-    <a href="#no_pref">No preference</a>
-    <a href="#cmsc">CMSC</a>
-    <a href="#econ">ECON</a>
-    <a href="#math">MATH</a>
-    <a href="#etc">etc.</a>
-  </div>
-</div>
+        {% if args %}
+        <div class="args">
+            <pre>{{ args }}</pre>
+        </div>
+        {% endif %}
 
-<div class="course_num">
-<button onclick="myFunction()" class="dropbtn">Course Number</button>
-  <div id="mydepartment" class="department-content">
-    <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-    <a href="#no_pref">No preference</a>
-    <a href="#cmsc">12300</a>
-    <a href="#econ">15100</a>
-    <a href="#math">23950</a>
-    <a href="#etc">etc.</a>
-  </div>
-</div>
+        {% if err %}
+        <div class="error">
+            {{ err|safe }}
+        </div>
+        {% endif %}
 
-<div class="prof">
-<button onclick="myFunction()" class="dropbtn">Professor</button>
-  <div id="mydepartment" class="department-content">
-    <input type="text" placeholder="Search.." id="myInput" onkeyup="filterFunction()">
-    <a href="#no_pref">No preference</a>
-    <a href="#cmsc">Wachs</a>
-    <a href="#econ">Rogers</a>
-    <a href="#math">Borja</a>
-    <a href="#etc">etc.</a>
-  </div>
-</div>
-
-<script>
-/* When the user clicks on the button,
-toggle between hiding and showing the department content */
-function myFunction() {
-    document.getElementById("mydepartment").classList.toggle("show");
-}
-
-function filterFunction() {
-    var input, filter, ul, li, a, i;
-    input = document.getElementById("myInput");
-    filter = input.value.toUpperCase();
-    div = document.getElementById("mydepartment");
-    a = div.getElementsByTagName("a");
-    for (i = 0; i < a.length; i++) {
-        if (a[i].innerHTML.toUpperCase().indexOf(filter) > -1) {
-            a[i].style.display = "";
-        } else {
-            a[i].style.display = "none";
-        }
-    }
-}
-</script>
+        <div class="frame">
+            {% if result != None %}
+            <div class="results">
+                <table class="courses">
+                    <tr>
+                        {% for col in columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for entry in result %}
+                    <tr>
+                        {% for col in entry %}
+                        <td>{{ col }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            <p class="num_results">Results: {{ num_results }}</p>
+            {% endif %}
+        </div>
     </body>
 </html>

@@ -6,29 +6,29 @@ EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
 
+def pre_process(evalspart1, evalspart2, sqldbpath):
 
-db = sqlite3.connect(SQL_DB_PATH)
-j1 = pd.read_json(EVALS_PART_1, convert_dates = False)
-j2 = pd.read_json(EVALS_PART_2, convert_dates = False)
+    db = sqlite3.connect(sqldbpath)
+    j1 = pd.read_json(evalspart1, convert_dates = False)
+    j2 = pd.read_json(evalspart2, convert_dates = False)
 
-j = pd.concat([j1, j2])
-j = j.set_index('unique_id')
+    j = pd.concat([j1, j2])
+    j = j.set_index('unique_id')
 
-#aggregate numerical scores re: tests, instructor, readings, assignments, as 
-#well as sentiment analysis scores
+    #aggregate numerical scores re: tests, instructor, readings, assignments, as 
+    #well as sentiment analysis scores
 
-j = agg_num.add_score_cols(j)
+    j = agg_num.add_score_cols(j)
+    
+    for x in [j['year'], j['section'], j['course_number'], j['num_responses']]:
+        x = x.fillna(-1).astype(int)
+        
+    for x in [j['low_time'], j['avg_time'], j['high_time']]:
+        x = x.fillna(-1).astype(float)
 
-j['year'] = j['year'].fillna(-1).astype(int)
-j['section'] = j['section'].fillna(-1).astype(int)
-j['course_number'] = j['course_number'].fillna(-1).astype(int)
-j['num_responses'] = j['num_responses'].fillna(-1).astype(int)
-j['low_time'] = j['low_time'].fillna(-1).astype(float)
-j['avg_time'] = j['avg_time'].fillna(-1).astype(float)
-j['high_time'] = j['high_time'].fillna(-1).astype(float)
-
-
-j = j.where(j != -1, None)
+    j = j.where(j != -1, None)
+    
+    return j, db
 
 
 
@@ -49,6 +49,8 @@ def gen_profs(j, db):
             for prof in row['instructors']:
                 fullname = prof.split(', ')
                 profs.append([ind, fullname[0], fullname[-1]])
+        else:
+            profs.append([ind, None, None])
 
     profs = pd.DataFrame(profs)
     profs = profs.rename(columns = {0 : 'course_id', 1: "ln", 2 : "fn"})
@@ -64,6 +66,8 @@ def gen_crosslists(j, db):
             x = row['identical_courses'].split(', ')
             for course in x:
                 crosslists.append([ind, course])
+        else:
+            crosslists.append([ind, None])
                 
     crosslists = pd.DataFrame(crosslists)
     crosslists = crosslists.rename(columns = {0 : 'course_id', 1 : 'crosslist'})
@@ -75,7 +79,7 @@ def gen_evals(j, db):
 
     evals = []
     for ind, row in j.iterrows():
-        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None]
+        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None, None, None]
         if row['instructor_score'] != None:
             if row['instructor_score'] > -1:
                 eval[1] = row['instructor_score']
@@ -110,6 +114,10 @@ def gen_evals(j, db):
         if row['readings_score_col'] != None:
             if row['readings_score_col'] > -1:
                 eval[13] = row['readings_score_col']
+        if type(row['good_instructor']) == list:
+            eval[14] = int(row['good_instructor'][0])
+            eval[15] = int(row['good_instructor'][1])
+
 
         evals.append(eval)
 
@@ -119,13 +127,14 @@ def gen_evals(j, db):
         3 : 'over_score' , 4 : 'test_score', 5 : 'num_responses', \
         6 : 'low_time', 7 : 'avg_time', 8 : 'high_time', 9 : 'num_recommend', \
         10 : 'num_dont_recommend', 11 : 'inst_sentiment', 12 : 'course_sentiment',
-        13 : 'read_score'})
+        13 : 'read_score', 14 : 'good_inst', 15 : 'bad_inst'})
 
     sqldbevals = evals.to_sql('evals', con = db, flavor = 'sqlite', index = False)
 
     pass
 
 if __name__ == '__main__':
+    j, db = pre_process(EVALS_PART_1, EVALS_PART_2, SQL_DB_PATH)
     gen_courses(j, db)
     gen_profs(j, db)
     gen_crosslists(j, db)

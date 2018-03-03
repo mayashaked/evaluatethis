@@ -61,34 +61,19 @@ p.num_results {
     font-size: 12px;
 }
 
-table.form {
+table.form_course {
     text-align: left;
 }
 
-table.form tr td,
-table.form tr th {
+table.form_course_course tr td,
+table.form_course tr th {
     vertical-align: top;
 }
 
-table.form input {
+table.form_course input {
     margin-right: 5px;
 }
 
-table.form input#id_query {
-    font-size: 18px;
-}
-
-table.form ul#id_days {
-    margin: 0px;
-    padding: 0px;
-}
-
-table.form ul#id_days li {
-    display: block;
-    float: left;
-    margin: 0px;
-    padding: 0px;
-}
 
 table.courses {
     border: 1px solid #ddd;
