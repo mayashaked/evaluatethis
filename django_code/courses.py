@@ -3,10 +3,48 @@
 import sqlite3
 import os
 import pandas as pd
+from wordcloud import WordCloud
+from nltk.corpus import stopwords
+import matplotlib.pyplot as plt
 
 # Use this filename for the database
 DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
+
+
+def get_wc(args_from_ui):
+    db = sqlite3.connect(DATABASE_FILENAME)
+    query = create_query(args_from_ui)
+    evals_df = pd.read_sql_query(query, db)
+    evals_df = evals_df.dropna(axis = 1, how = 'all')
+    all_ids = list(evals_df['course_id'])
+    if len(args_from_ui) == 2 and "dept" in args_from_ui:
+        query = 'SELECT course_resp FROM text WHERE '
+        for _id in all_ids:
+            query += 'course_id = ' + str(_id) + ' OR ' 
+        query = query[:-4] + ';'
+    elif len(args_from_ui) == 2 and "dept" not in args_from_ui:
+        query = 'SELECT inst_resp FROM text WHERE '
+        for _id in all_ids:
+            query += 'course_id = ' + str(_id) + ' OR '
+        query = query[:-4] + ';'
+    elif len(args_from_ui) == 4:
+        query = 'SELECT course_resp, inst_resp FROM text WHERE '
+        for _id in all_ids:
+            query += 'course_id = ' + str(_id) + ' OR '
+        query = query[:-4]
+
+    df = pd.read_sql_query(query, db)
+    evals = list(df['course_resp'])
+    clean = ''
+    for eval in evals:
+        eval = eval.lower()
+        eval = eval.strip('"@#$%^&*)(_+=][}{:;.,')
+        clean += eval + ' '
+
+    wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 500, height = 100).generate(clean)
+
+    return wordcloud
 
 
 def find_courses(args_from_ui):
