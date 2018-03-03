@@ -13,12 +13,18 @@
         <div class="frame">
             <form method="get">
                 {% csrf_token %}
-                <table class="form_course">
-                    {{ form_course }}
+                <table class="form_course_dept">
+                    {{ form_course_dept }}
                 </table>
+                <table class="form_course_num">
+                    {{ form_course_num }}
+                </table>                
                 <p>and/or</p>
-                <table class="form_prof">
-                    {{ form_prof.as_table }}
+                <table class="form_prof_fn">
+                    {{ form_prof_fn }}
+                </table>
+                <table class="form_prof_ln">
+                    {{ form_prof_ln }}
                 </table>
                 <table class="form">
                     {{ form.as_table }}
