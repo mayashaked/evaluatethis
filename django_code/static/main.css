@@ -2,18 +2,20 @@
 html, body {
     margin: 0;
     padding: 0;
-    font-family: Verdana;
+    font-family: Courier;
+    background-image: url("https://c1.staticflickr.com/4/3717/10781798656_6de11ea57c.jpg")
 }
 
 div#header {
-    background: rgb(120, 20, 0);
+    background: rgb(177, 135, 237);
     margin: 0;
     padding: 0;
 }
 
 div#header h1 {
-    font-size: 18px;
-    color: #f5f5f5;
+    font-size: 24px;
+    color: #102a7f;
+    text-align: center;
     margin: 0;
     padding: 7px;
 }
@@ -45,7 +47,7 @@ fieldset {
 
 fieldset legend {
     font-weight: bold;
-    font-size: 12px;
+    font-size: 18px;
 }
 
 input.query {
@@ -53,7 +55,8 @@ input.query {
 }
 
 label {
-    font-size: 12px;
+    font-size: 18px;
+    color: #000000
 }
 
 p.num_results {
@@ -63,6 +66,7 @@ p.num_results {
 
 table.form_course {
     text-align: left;
+    background-color: #ffffff
 }
 
 table.form_course_course tr td,
@@ -71,6 +75,20 @@ table.form_course tr th {
 }
 
 table.form_course input {
+    margin-right: 5px;
+}
+
+table.form_prof {
+    text-align: left;
+    background-color: #ffffff
+}
+
+table.form_prof_prof tr td,
+table.form_prof tr th {
+    vertical-align: top;
+}
+
+table.form_prof input {
     margin-right: 5px;
 }
 
@@ -110,6 +128,6 @@ ul.errorlist li {
 }
 
 span.helptext {
-    font-size: 11px;
-    color: gray;
+    font-size: 13px;
+    color: #fffff;
 }
