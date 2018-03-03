@@ -133,10 +133,37 @@ def gen_evals(j, db):
 
     pass
 
+
+def gen_text(j, db):
+    j = j[['course_responses', 'instructor_responses']]
+
+    all_responses = []
+    for ind, row in j.iterrows():
+        resps = [ind, None, None]
+        if type(row['course_responses']) == list and len(row['course_responses']) > 0:
+            course_resps = ''
+            for course_resp in row['course_responses']:
+                course_resps += course_resp + ' '
+            resps[1] = course_resps
+        if type(row['instructor_responses']) == list and len(row['instructor_responses']) > 0:
+            inst_resps = ''
+            for inst_resp in row['instructor_responses']:
+                inst_resps += inst_resp + ' '
+            resps[2] = inst_resps
+        allresponses.append(resps)
+
+    allresponses = pd.DataFrame(allresponses)
+    text = allresponses.rename(columns = {0 : 'course_id', 1 : 'course_resp', 2 : 'inst_resp'})
+
+    sqldbtext evals.to_sql('text', con = db, flavor = 'sqlite', index = False)
+
+    pass
+
 if __name__ == '__main__':
     j, db = pre_process(EVALS_PART_1, EVALS_PART_2, SQL_DB_PATH)
     gen_courses(j, db)
     gen_profs(j, db)
     gen_crosslists(j, db)
     gen_evals(j, db)
+    gen_text(j, db)
 
