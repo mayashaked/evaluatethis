@@ -29,6 +29,7 @@ def find_courses(args_from_ui):
     db = sqlite3.connect(DATABASE_FILENAME)
     query = create_query(args_from_ui)
     evals_df = pd.read_sql_query(query, db)
+    evals_df = evals_df.dropna(axis = 1, how = 'all')
 
     return evals_df
 
