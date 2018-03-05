@@ -3,7 +3,7 @@
 import sqlite3
 import os
 import pandas as pd
-#from wordcloud import WordCloud
+from wordcloud import WordCloud
 from nltk.corpus import stopwords
 import matplotlib.pyplot as plt
 
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 
-'''
+
 def get_wc(args_from_ui):
 
     if not args_from_ui:
@@ -25,33 +25,35 @@ def get_wc(args_from_ui):
     if len(args_from_ui) == 2 and "dept" in args_from_ui:
         query = 'SELECT course_resp FROM text WHERE '
         for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR ' 
+            query += 'course_id = ' + str(_id) + ' OR '
         query = query[:-4] + ';'
+        df = pd.read_sql_query(query, db)
+        evals = list(df['course_resp'])
     elif len(args_from_ui) == 2 and "dept" not in args_from_ui:
         query = 'SELECT inst_resp FROM text WHERE '
         for _id in all_ids:
             query += 'course_id = ' + str(_id) + ' OR '
         query = query[:-4] + ';'
-    elif len(args_from_ui) == 4:
+        df = pd.read_sql_query(query, db)
+        evals = list(df['inst_resp'])
+    else:
         query = 'SELECT course_resp, inst_resp FROM text WHERE '
         for _id in all_ids:
             query += 'course_id = ' + str(_id) + ' OR '
         query = query[:-4]
-
-    if len(args_from_ui) == 2 or len(args_from_ui) == 4:
         df = pd.read_sql_query(query, db)
-        evals = list(df['course_resp'])
-        clean = ''
-        for eval in evals:
-            if eval != None:
-                eval = eval.lower()
-                eval = eval.strip('"@#$%^&*)(_+=][}{:;.,')
-                clean += eval + ' '
+        evals = list(df['course_resp']) + list(df['inst_resp'])
 
-        wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 500, height = 100).generate(clean)
+    clean = ''
+    for eval in evals:
+        if eval != None:
+            eval = eval.lower()
+            eval = eval.strip('"@#$%^&*)(_+=][}:;.,')
+            clean += eval + ' '
 
-        return wordcloud
-'''
+    wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 600, height = 300).generate(clean)
+
+    return wordcloud
 
 
 
@@ -102,12 +104,12 @@ def create_query(args_from_ui):
                 + args_from_ui['dept'] + "' AND courses.course_number = '" + \
                 args_from_ui['course_num'] + "';"
         elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
-            query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals \
+            query_string = "SELECT courses.course_id, evals.* FROM courses JOIN profs JOIN evals \
                 ON courses.course_id = profs.course_id AND courses.course_id =\
                 evals.course_id WHERE profs.fn = '" + args_from_ui['prof_fn'] +\
                 "' AND profs.ln = '" + args_from_ui['prof_ln'] + "';"
     elif len(args_from_ui) == 4: #searching by course and professor
-         query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals JOIN\
+         query_string = "SELECT courses.course_id, evals.* FROM courses JOIN profs JOIN evals JOIN\
             crosslists ON courses.course_id = evals.course_id AND \
             courses.course_id = crosslists.course_id AND courses.course_id = \
             profs.course_id WHERE courses.dept = '" + args_from_ui['dept'] + \
