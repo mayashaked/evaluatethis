@@ -4,7 +4,7 @@ import csv
 
 def generate_lists():
 
-    connection = sqlite3.connect('../../data/courses_tables.db')
+    connection = sqlite3.connect('reevaluations.db')
     c = connection.cursor()
 
     # get lists of unique values from sql database
@@ -18,9 +18,17 @@ def generate_lists():
     prof_fn = c.execute('''SELECT DISTINCT fn FROM profs WHERE 
         fn IS NOT NULL and fn <> "" ORDER BY fn''').fetchall()
 
+    course_info = c.execute('''SELECT dept, course_number, course FROM courses''').fetchall()
+
     connection.close()
 
     # write lists of unique values to file
+    f = open('course_info.csv', 'w')
+    w = csv.writer(f, delimiter="|")
+    for row in course_info:
+        w.writerow(row)
+    f.close()
+
     f = open('dept_list.csv', 'w')
     w = csv.writer(f, delimiter="|")
     for row in dept:
