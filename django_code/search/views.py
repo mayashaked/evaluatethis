@@ -13,6 +13,10 @@ from operator import and_
 from django.shortcuts import render
 from django import forms
 
+#from django.views.generic import Course_Num_ListView, Course_Num_CreateView, Course_Num_UpdateView
+from django.urls import reverse_lazy
+#from .models import Course_Num
+
 from courses import find_courses #, get_wc
 
 NOPREF_STR = 'No preference'
@@ -27,8 +31,15 @@ COLUMN_NAMES = dict(
 def _load_column(filename, col=0):
     """Load single column from csv file."""
     with open(filename) as f:
-        col = list(zip(*csv.reader(f)))[0]
-        return list(col)
+        col = list(zip(*csv.reader(f, delimiter='|')))[col]
+        col = set(col)
+        col = list(col)
+        col.sort()
+        try:
+            col.remove('') # remove blanks from the column
+        except:
+            pass
+        return col
 
 
 def _load_res_column(filename, col=0):
@@ -42,8 +53,8 @@ def _build_dropdown(options):
 
 
 # create the dropdown menus that appear on the website 
-DEPTS = _build_dropdown([None] + _load_res_column('dept_list.csv'))
-COURSE_NUMS = _build_dropdown([None] + _load_res_column('course_num_list.csv'))
+DEPTS = _build_dropdown([None] + _load_res_column('course_info.csv', col = 0))
+COURSE_NUMS = _build_dropdown([None] + _load_res_column('course_info.csv', col = 1))
 PROFS_FN = _build_dropdown([None] + _load_res_column('prof_fn_list.csv'))
 PROFS_LN = _build_dropdown([None] + _load_res_column('prof_ln_list.csv'))
 
@@ -55,6 +66,21 @@ class SearchForm_course_dept(forms.Form):
 class SearchForm_course_num(forms.Form):
     course_num = forms.ChoiceField(label='Course Number', choices=COURSE_NUMS, required=False)
 
+
+
+# class PersonListView(ListView):
+#     model = Person
+#     context_object_name = 'people'
+
+# class PersonCreateView(CreateView):
+#     model = Person
+#     fields = ('name', 'birthdate', 'country', 'city')
+#     success_url = reverse_lazy('person_changelist')
+
+# class PersonUpdateView(UpdateView):
+#     model = Person
+#     fields = ('name', 'birthdate', 'country', 'city')
+#     success_url = reverse_lazy('person_changelist')
 
 class SearchForm_prof_fn(forms.Form):
     prof_fn = forms.ChoiceField(label='Professor\'s First Name', choices=PROFS_FN, required=False)
