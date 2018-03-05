@@ -1,16 +1,20 @@
 import pandas as pd
 import sqlite3
 import aggregate_numerical_data as agg_num
+from nltk.corpus import stopwords
+import dyadic_partitioning as dy
 
 EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
+STOPWORDS = stopwords("english") + ['class', 'classes', 'professor', 'professors']
 
-def pre_process(evalspart1, evalspart2, sqldbpath):
 
-    db = sqlite3.connect(sqldbpath)
-    j1 = pd.read_json(evalspart1, convert_dates = False)
-    j2 = pd.read_json(evalspart2, convert_dates = False)
+def pre_process(sql_db_path, evals_part_1, evals_part_2)
+
+    db = sqlite3.connect(sql_db_path)
+    j1 = pd.read_json(evals_part_1, convert_dates = False)
+    j2 = pd.read_json(evals_part_2, convert_dates = False)
 
     j = pd.concat([j1, j2])
     j = j.set_index('unique_id')
@@ -19,16 +23,20 @@ def pre_process(evalspart1, evalspart2, sqldbpath):
     #well as sentiment analysis scores
 
     j = agg_num.add_score_cols(j)
-    
-    for x in [j['year'], j['section'], j['course_number'], j['num_responses']]:
-        x = x.fillna(-1).astype(int)
-        
-    for x in [j['low_time'], j['avg_time'], j['high_time']]:
-        x = x.fillna(-1).astype(float)
+    j = dy.go(j, level = 10, lambda_ = 3)
+
+    j['year'] = j['year'].fillna(-1).astype(int)
+    j['section'] = j['section'].fillna(-1).astype(int)
+    j['course_number'] = j['course_number'].fillna(-1).astype(int)
+    j['num_responses'] = j['num_responses'].fillna(-1).astype(int)
+    j['low_time'] = j['low_time'].fillna(-1).astype(float)
+    j['avg_time'] = j['avg_time'].fillna(-1).astype(float)
+    j['high_time'] = j['high_time'].fillna(-1).astype(float)
+
 
     j = j.where(j != -1, None)
-    
-    return j, db
+
+    return db, j
 
 
 
@@ -79,44 +87,26 @@ def gen_evals(j, db):
 
     evals = []
     for ind, row in j.iterrows():
-        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None, None, None]
-        if row['instructor_score'] != None:
-            if row['instructor_score'] > -1:
-                eval[1] = row['instructor_score']
-        if row['assignments_score'] != None:
-            if row['assignments_score'] > -1:
-                eval[2] = row['assignments_score']
-        if row['overall_score'] != None:
-            if row['overall_score'] > -1:
-                eval[3] = row['overall_score']
-        if row['tests_score'] != None:
-            if row['tests_score'] > -1:
-                eval[4] = row['tests_score']
+        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None, None, None, None, None]
+        eval[1] = row['instructor_score']
+        eval[2] = row['assignments_score']
+        eval[3] = row['overall_score']
+        eval[4] = row['tests_score']
         eval[5] = row['num_responses']
-        if row['low_time'] != None:
-            if row['low_time'] > -1:
-                eval[6] = row['low_time']
-        if row['avg_time'] != None:
-            if row['avg_time'] > -1:
-                eval[7] = row['avg_time']
-        if row['high_time'] != None:
-            if row['high_time'] > -1:
-                eval[8] = row['high_time']
+        eval[6] = row['low_time']
+        eval[7] = row['avg_time']
+       eval[8] = row['high_time']
         if type(row['recommend']) == list:
             eval[9] = int(row['recommend'][0])
             eval[10] = int(row['recommend'][1])
-        if row['inst_sentiment'] != None:
-            if row['inst_sentiment'] > -1:
-                eval[11] = row['inst_sentiment']
-        if row['course_sentiment'] != None:
-            if row['course_sentiment'] > -1:
-                eval[12] = row['course_sentiment']
-        if row['readings_score_col'] != None:
-            if row['readings_score_col'] > -1:
-                eval[13] = row['readings_score_col']
+        eval[11] = row['inst_sentiment']
+        eval[12] = row['course_sentiment']
+        eval[13] = row['readings_score_col']
         if type(row['good_instructor']) == list:
             eval[14] = int(row['good_instructor'][0])
             eval[15] = int(row['good_instructor'][1])
+        eval[16] = row['would_recommend_inst']
+        eval[17] = row['would_recommend']
 
 
         evals.append(eval)
@@ -132,7 +122,6 @@ def gen_evals(j, db):
     sqldbevals = evals.to_sql('evals', con = db, flavor = 'sqlite', index = False)
 
     pass
-
 
 def gen_text(j, db):
     j = j[['course_responses', 'instructor_responses']]
@@ -152,18 +141,42 @@ def gen_text(j, db):
             resps[2] = inst_resps
         allresponses.append(resps)
 
-    allresponses = pd.DataFrame(allresponses)
-    text = allresponses.rename(columns = {0 : 'course_id', 1 : 'course_resp', 2 : 'inst_resp'})
+    alltext = []
 
-    sqldbtext evals.to_sql('text', con = db, flavor = 'sqlite', index = False)
+    #pre-clean all text responses so we can quickly make a wordcloud later
+    for [ind, courseresp, instresp] in all_responses:
+        text = [ind, None, None]
+        if coureresp != None:
+            resp = courseresp.lower()
+            resp = resp.strip('`~!@#$%^&*)(_+=][}{":;><,.?')
+            resplist = resp.split()
+            resplist = [x for x in resplist if x not in STOPWORDS]
+            resp = (' ').join(resplist)
+            text[1] = resp
+        if instresp != None:
+            resp = instresp.lower()
+            resp = resp.strip('`~!@#$%^&*)(_+=][}{":;><,.?')
+            resplist = resp.split()
+            resplist = [x for x in resplist if x not in STOPWORDS]
+            resp = (' ').join(resplist)
+            text[2] = resp
+        alltext.append(text)
+
+
+
+    alltext = pd.DataFrame(text)
+
+    alltext = alltext.rename(columns = {0 : 'course_id', 1 : 'course_resp', 2 : 'inst_resp'})
+
+    sqldbtext = alltext.to_sql('text', con = db, flavor = 'sqlite', index = False)
 
     pass
 
-if __name__ == '__main__':
-    j, db = pre_process(EVALS_PART_1, EVALS_PART_2, SQL_DB_PATH)
+
+if __name__ == "__main__":
+    db, j = pre_process(SQL_DB_PATH, EVALS_PART_1, EVALS_PART_2)
     gen_courses(j, db)
     gen_profs(j, db)
     gen_crosslists(j, db)
     gen_evals(j, db)
     gen_text(j, db)
-
