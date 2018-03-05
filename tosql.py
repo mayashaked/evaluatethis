@@ -7,7 +7,7 @@ import dyadic_partitioning as dy
 EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
-STOPWORDS = stopwords("english") + ['class', 'classes', 'professor', 'professors']
+STOPWORDS = stopwords("english") + ['class', 'classes', 'professor', 'professors' 'course', 'courses', 'ta', 'tas']
 
 
 def pre_process(sql_db_path, evals_part_1, evals_part_2)
