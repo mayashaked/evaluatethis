@@ -3,59 +3,13 @@
 import sqlite3
 import os
 import pandas as pd
-#from wordcloud import WordCloud
-from nltk.corpus import stopwords
-import matplotlib.pyplot as plt
 
 # Use this filename for the database
 DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 
-'''
-def get_wc(args_from_ui):
 
-    if not args_from_ui:
-        return pd.DataFrame()
-
-    db = sqlite3.connect(DATABASE_FILENAME)
-    query = create_query(args_from_ui)
-    evals_df = pd.read_sql_query(query, db)
-    evals_df = evals_df.dropna(axis = 1, how = 'all')
-    all_ids = list(evals_df['course_id'])
-    if len(args_from_ui) == 2 and "dept" in args_from_ui:
-        query = 'SELECT course_resp FROM text WHERE '
-        for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR ' 
-        query = query[:-4] + ';'
-    elif len(args_from_ui) == 2 and "dept" not in args_from_ui:
-        query = 'SELECT inst_resp FROM text WHERE '
-        for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR '
-        query = query[:-4] + ';'
-    elif len(args_from_ui) == 4:
-        query = 'SELECT course_resp, inst_resp FROM text WHERE '
-        for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR '
-        query = query[:-4]
-
-    if len(args_from_ui) == 2 or len(args_from_ui) == 4:
-        df = pd.read_sql_query(query, db)
-        evals = list(df['course_resp'])
-        clean = ''
-        for eval in evals:
-            if eval != None:
-                eval = eval.lower()
-                eval = eval.strip('"@#$%^&*)(_+=][}{:;.,')
-                clean += eval + ' '
-
-        wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 500, height = 100).generate(clean)
-
-        return wordcloud
-'''
-
-
-
-def find_courses(args_from_ui):
+def find_courses(args):
     '''
     Takes a dictionary containing search criteria and returns courses
     that match the criteria.  The dictionary will contain some of the
@@ -69,53 +23,87 @@ def find_courses(args_from_ui):
     Returns a pair: list of attribute names in order and a list
     containing query results.
     '''
-    if not args_from_ui:
+    if not args:
         return pd.DataFrame()
 
     db = sqlite3.connect(DATABASE_FILENAME)
-    query = create_query(args_from_ui)
-    evals_df = pd.read_sql_query(query, db)
-    evals_df = evals_df.dropna(axis = 1, how = 'all')
 
-    return evals_df
+    if len(args) == 2:
+
+        if 'dept' in args and 'course_num' in args:
+            dept = dept_query()
+            course = course_query()
+            dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
+            course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
+            return dept_df, course_df
+
+        elif 'prof_fn' in args and 'prof_ln' in args:
+            prof = prof_query()
+            dept = dept_query()
+            dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
+            prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
+            return dept_df, prof_df
+
+    elif len(args) == 4:
+        dept = dept_query()
+        prof = prof_query()
+        course = course_query()
+        course_and_prof = course_and_prof_query()
+        dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
+        prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
+        course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
+        course_and_prof_df = pd.read_sql_query(course_and_prof.format(args['dept'], args['dept'], args['course_num'], args['fn'], args['ln']), db)
+        return dept_df, course_df, prof_df, course_and_prof_df
 
 
-def create_query(args_from_ui):
-    '''
-    Takes a dictionary containing search criteria and returns a
-    search query
+def course_and_prof_query():
 
-    Inputs:
-        args_from_ui (dict): search criteria
-        c (sqlite3 cursor object): cursor object for the database
+    course_and_prof = "SELECT evals.*, course, fn, ln, \
+                       FROM courses JOIN profs JOIN evals JOIN crosslists \
+                       ON courses.course_id = evals.course_id \
+                       AND courses.course_id = crosslists.course_id \
+                       AND courses.course_id = profs.course_id \
+                       WHERE (courses.dept = '{}' or crosslists.crosslist = '{}') \
+                       AND courses.course_number = '{}' \
+                       AND profs.fn = '{}' \
+                       AND profs.ln = '{}';"
 
-    Outputs:
-        (string): SQL search query
-        arg_array (list of strings and ints): argument array
-    '''
-    if len(args_from_ui) == 2:
-        if 'dept' in args_from_ui and 'course_num' in args_from_ui:
-        # searching by course
-            query_string = "SELECT courses.course_id, evals.* FROM courses JOIN evals JOIN \
-                crosslists ON courses.course_id = evals.course_id AND \
-                courses.course_id = crosslists.course_id WHERE courses.dept = '"\
-                + args_from_ui['dept'] + "' AND courses.course_number = '" + \
-                args_from_ui['course_num'] + "';"
-        elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
-            query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals \
-                ON courses.course_id = profs.course_id AND courses.course_id =\
-                evals.course_id WHERE profs.fn = '" + args_from_ui['prof_fn'] +\
-                "' AND profs.ln = '" + args_from_ui['prof_ln'] + "';"
-    elif len(args_from_ui) == 4: #searching by course and professor
-         query_string = "SELECT evals.* FROM courses JOIN profs JOIN evals JOIN\
-            crosslists ON courses.course_id = evals.course_id AND \
-            courses.course_id = crosslists.course_id AND courses.course_id = \
-            profs.course_id WHERE courses.dept = '" + args_from_ui['dept'] + \
-            "' AND courses.course_number = '" + args_from_ui['course_num'] + \
-            "' AND profs.fn = '" + args_from_ui['prof_fn'] + \
-            "' AND profs.ln = '" + args_from_ui['prof_ln'] + "';"
-    
-    return query_string
+    return course_and_prof
+
+def course_query():
+
+    course = "SELECT evals.*, course, fn, ln \
+              FROM courses JOIN profs JOIN evals JOIN crosslists \
+              ON courses.course_id = evals.course_id \
+              AND courses.course_id = crosslists.course_id \
+              AND courses.course_id = profs.course_id \
+              WHERE (courses.dept = '{}' or crosslists.crosslist = '{}') \
+              AND courses.course_number = '{}';"
+
+    return course
+
+def prof_query():
+
+    prof = "SELECT evals.*, course, fn, ln, \
+            FROM courses JOIN profs JOIN evals JOIN crosslists \
+            ON courses.course_id = evals.course_id \
+            AND courses.course_id = crosslists.course_id \
+            AND courses.course_id = profs.course_id \
+            WHERE profs.fn = '{}' \
+            AND profs.ln = '{}';"
+
+    return prof
+
+def dept_query():
+
+    dept =   "SELECT evals.*, course, fn, ln \
+              FROM courses JOIN profs JOIN evals JOIN crosslists \
+              ON courses.course_id = evals.course_id \
+              AND courses.course_id = crosslists.course_id \
+              AND courses.course_id = profs.course_id \
+              WHERE (courses.dept = '{}' or crosslists.crosslist = '{}');"
+
+    return dept
 
 
 def get_header(cursor):
