@@ -2,22 +2,22 @@
 html, body {
     margin: 0;
     padding: 0;
-    font-family: Courier;
-    background-image: url("https://c1.staticflickr.com/4/3717/10781798656_6de11ea57c.jpg")
+    font-family: Helvetica;
+    background-image:url("/static/images/background.jpg");
 }
 
 div#header {
-    background: rgb(177, 135, 237);
+    background: rgba(255, 255, 255, 0.5);
     margin: 0;
     padding: 0;
 }
 
 div#header h1 {
     font-size: 24px;
-    color: #102a7f;
+    color: rgb(0, 0, 0);
     text-align: center;
     margin: 0;
-    padding: 7px;
+    padding: 10px;
 }
 
 div.frame {
