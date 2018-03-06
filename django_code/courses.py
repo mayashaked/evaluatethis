@@ -10,9 +10,6 @@
 import sqlite3
 import os
 import pandas as pd
-from wordcloud import WordCloud
-from nltk.corpus import stopwords
-import matplotlib.pyplot as plt
 from statistics import mode
 
 # Use this filename for the database
