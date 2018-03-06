@@ -1,12 +1,11 @@
 #-------------------------------------------------------------------------------
-# Name:        module1
-# Purpose:
+# Name:        Link Scraper
+# Purpose:     Scrape all links to evaluation pages in preparation of scraping
+#              the evaluations themselves.
 #
-# Author:      alex
+# Author:      Alex Maiorella
 #
-# Created:     26/01/2018
-# Copyright:   (c) alex 2018
-# Licence:     <your licence>
+# Created:     01/26/2018
 #-------------------------------------------------------------------------------
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -16,18 +15,34 @@ import csv
 import sys
 
 def main(username, password, CHROMEDRIVER_PATH):
-
+    '''
+    Initializes chromedriver, navigates to and signs into evaluation site.
+    Then scrapes all the possible departments and years (takes 20 seconds or so)
+    and calls visit_pages to begin crawling for links.
+    Inputs:
+        username & password for shibbolith, path to chromedriver executable
+    Returns:
+        None
+    '''
     driver = webdriver.Chrome(CHROMEDRIVER_PATH)
+
+    # This setting ensures that a page is allowed to load completely
     driver.implicitly_wait(10)
+
     driver.get("https://evaluations.uchicago.edu/")
     elem = driver.find_element_by_name("j_username")
     elemp = driver.find_element_by_name("j_password")
+
     elem.send_keys(username)
     elemp.send_keys(password)
     elemp.send_keys(Keys.RETURN)
-    choices = [c.text for c in driver.find_elements_by_tag_name("option") if c.text != ""]
+
+    choices = [c.text for c in driver.find_elements_by_tag_name("option") \
+              if c.text != ""]
+
     depts = []
     years = []
+
     for c in choices:
         d = re.search("\(([A-Z]{4})\)", c)
         y = re.search("[0-9]{4}-[0-9]{4}", c)
@@ -40,6 +55,15 @@ def main(username, password, CHROMEDRIVER_PATH):
 
 
 def visit_pages(driver, depts, years):
+    '''
+    Uses dropdown menus on evaluation site to systematically visit every
+    combination of year and department in order to find links to every
+    evaluation.
+    Inputs:
+        Chromedriver, list of depts, list of years
+    Returns:
+        None (calls write function)
+    '''
     links_to_evals = []
     for d in depts:
         for y in years:
@@ -56,13 +80,17 @@ def visit_pages(driver, depts, years):
     write(links_to_evals)
 
 
-def write(stuff):
+def write(links):
+    '''
+    Writes the list of evaluation links to a csv file.
+    '''
     with open('ALL_LINKS.csv', 'w') as f:
         writer = csv.writer(f)
-        writer.writerows(stuff)
+        writer.writerows(links)
+
 
 if __name__ == '__main__':
     try:
         main(sys.argv[1], sys.argv[2], sys.argv[3])
     except:
-        print("Arguements are: 'username', 'password', 'path to chromedriver.exe'")
+        print("Arguements: 'username', 'password', 'path to chromedriver.exe'")

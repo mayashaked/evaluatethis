@@ -1,5 +1,12 @@
-# code to create sql query to find courses that match the inputs
-#make sure to actually use crosslists in sql query
+#-------------------------------------------------------------------------------
+# Name:        Courses
+# Purpose:     Queries the sql database and build Pandas DataFrames to provide
+#              all information needed on webpage.
+#
+# Author:      Alex Maiorella, Lily Li, Maya Shaked, Sam Hoffman
+#
+# Created:     03/04/2018
+#-------------------------------------------------------------------------------
 import sqlite3
 import os
 import pandas as pd
@@ -11,7 +18,6 @@ from statistics import mode
 # Use this filename for the database
 DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
-
 
 
 def get_wc(args_from_ui):
@@ -40,15 +46,12 @@ def get_wc(args_from_ui):
         + ' AND profs.ln = ' + args_from_ui[prof_ln] + ';'
         evals_df = pd.read_sql_query(query, db)
         evals = list(evals_df)
-    
+
     clean = ' '.join([x for x in evals if x != None])
 
     wordcloud = WordCloud(width = 600, height = 300).generate(clean)
 
     return wordcloud
-
-
-
 
 def find_courses(args):
 
@@ -82,7 +85,6 @@ def find_courses(args):
         elif 'prof_fn' in args and 'prof_ln' in args:
             prof = prof_query()
             dept = dept_query()
-            print('here')
             primary_dept = get_profs_primary_dept(args, db)
             print(primary_dept)
             dept_df = pd.read_sql_query(dept.format(primary_dept, primary_dept), db)
@@ -102,7 +104,9 @@ def find_courses(args):
 
 
 def course_and_prof_query():
-
+    '''
+    Query for eval data from specified course & professor
+    '''
     course_and_prof = "SELECT evals.*, course, fn, ln \
                        FROM courses JOIN profs JOIN evals JOIN crosslists \
                        ON courses.course_id = evals.course_id \
@@ -116,7 +120,9 @@ def course_and_prof_query():
     return course_and_prof
 
 def course_query():
-
+    '''
+    Query for eval data from specified course
+    '''
     course = "SELECT evals.*, course, fn, ln \
               FROM courses JOIN profs JOIN evals JOIN crosslists \
               ON courses.course_id = evals.course_id \
@@ -128,7 +134,9 @@ def course_query():
     return course
 
 def prof_query():
-
+    '''
+    Query for eval data from specified professor
+    '''
     prof = "SELECT evals.*, course, fn, ln \
             FROM courses JOIN profs JOIN evals JOIN crosslists \
             ON courses.course_id = evals.course_id \
@@ -140,7 +148,9 @@ def prof_query():
     return prof
 
 def dept_query():
-
+    '''
+    Query for eval data from specified department
+    '''
     dept =   "SELECT evals.*, course, fn, ln \
               FROM courses JOIN profs JOIN evals JOIN crosslists \
               ON courses.course_id = evals.course_id \
@@ -175,12 +185,14 @@ def clean_header(s):
     return s
 
 def get_profs_primary_dept(args, db):
-
+    '''
+    Query database to find which dept a professor usually teaches under.
+    '''
     cursor = db.cursor()
     depts = cursor.execute('SELECT dept FROM courses JOIN profs ON \
         profs.course_id = courses.course_id WHERE profs.fn = ? \
         and profs.ln = ?', [args['prof_fn'], args['prof_ln']])
-    
+
     try:
         return mode([a[0] for a in depts])
         return depts[0]
