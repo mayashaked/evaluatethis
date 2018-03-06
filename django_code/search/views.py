@@ -114,7 +114,7 @@ def home(request):
                 plt.figure(figsize = (10, 5))
                 plt.imshow(wc)
                 plt.axis("off")
-                plt.savefig('../static/images/wordcloud.png')
+                plt.savefig('./static/images/wordcloud.png')
                 plt.close()
 
 
