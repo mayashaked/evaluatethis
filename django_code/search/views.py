@@ -13,7 +13,8 @@ from operator import and_
 from django.shortcuts import render
 from django import forms
 
-from courses import find_courses, get_wc
+from courses import find_courses
+from gen_wordcloud import get_wc
 
 NOPREF_STR = 'No preference'
 RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
