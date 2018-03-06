@@ -65,8 +65,8 @@ def find_courses(args):
       - prof_fn is a string
       - prof_ln is a string
 
-    Returns a pair: list of attribute names in order and a list
-    containing query results.
+    Returns pandas dataframes containing information necesssary for graphs/data
+    visualizations
     '''
     if not args:
         return pd.DataFrame()
@@ -92,6 +92,7 @@ def find_courses(args):
             return dept_df, prof_df
 
     elif len(args) == 4:
+
         dept = dept_query()
         prof = prof_query()
         course = course_query()
