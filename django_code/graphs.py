@@ -29,13 +29,13 @@ def prof_graph(args_from_ui):
     course_df = profdf.groupby(['course']).mean()
     lows = course_df.low_time
     dept_low = pd.Series({dept:deptdf.low_time.mean()})
-    lows.append(dept_low)
+    lows = lows.append(dept_low)
     avgs = course_df.avg_time
-    avgs.append(pd.Series({dept:deptdf.avg_time.mean()}))
+    avgs = avgs.append(pd.Series({dept:deptdf.avg_time.mean()}))
     highs = course_df.high_time
-    highs.append(pd.Series({dept:deptdf.high_time.mean()}))
+    highs = highs.append(pd.Series({dept:deptdf.high_time.mean()}))
     n = lows.shape[0]
-    ind = np.arange(n + 1)
+    ind = np.arange(n)
     width = 0.35
     plt.figure(figsize = (10, 7))
     p1 = plt.bar(ind, lows, width, color='#d62728')
@@ -43,7 +43,6 @@ def prof_graph(args_from_ui):
              bottom=lows, color = '#f442cb')
     p3 = plt.bar(ind, avgs, width,
              bottom=avgs, color = '#63cbe8')
-    p4 = plt.bar(ind, si)
     plt.ylabel('Amount of time spent')
     plt.title(title)
     xnames = list(profdf.course.unique())
