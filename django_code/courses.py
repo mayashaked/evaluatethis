@@ -43,7 +43,7 @@ def find_courses(args):
             course = course_query()
             dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
             course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
-            return dept_df, course_df
+            return course_df, dept_df
 
         elif 'prof_fn' in args and 'prof_ln' in args:
             prof = prof_query()
@@ -52,7 +52,7 @@ def find_courses(args):
             print(primary_dept)
             dept_df = pd.read_sql_query(dept.format(primary_dept, primary_dept), db)
             prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
-            return dept_df, prof_df, primary_dept
+            return prof_df, dept_df, primary_dept
 
     elif len(args) == 4:
 
@@ -64,7 +64,7 @@ def find_courses(args):
         prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
         course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
         course_and_prof_df = pd.read_sql_query(course_and_prof.format(args['dept'], args['dept'], args['course_num'], args['prof_fn'], args['prof_ln']), db)
-        return dept_df, course_df, prof_df, course_and_prof_df
+        return course_and_prof_df, dept_df, course_df, prof_df
 
 
 def course_and_prof_query():
