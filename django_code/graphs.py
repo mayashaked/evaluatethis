@@ -28,8 +28,12 @@ def prof_graph(args_from_ui):
     title = "Comparison of the time demands made by " + args_from_ui['prof_fn'] + ' ' + args_from_ui['prof_ln'] + " to the departmental average"
     course_df = profdf.groupby(['course']).mean()
     lows = course_df.low_time
+    dept_low = pd.Series({dept:deptdf.low_time.mean()})
+    lows.append(dept_low)
     avgs = course_df.avg_time
+    avgs.append(pd.Series({dept:deptdf.avg_time.mean()}))
     highs = course_df.high_time
+    highs.append(pd.Series({dept:deptdf.high_time.mean()}))
     n = lows.shape[0]
     ind = np.arange(n + 1)
     width = 0.35
