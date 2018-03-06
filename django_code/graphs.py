@@ -1,6 +1,7 @@
 import courses
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 '''
 get the necessary data given args from ui
 this assumes that you can search by prof, dept, or course number
@@ -22,26 +23,34 @@ def prof_graph(args_from_ui):
     If the user searches by professor only, this code will produce a graph comparing
     the time demands of every course the professor has taught to the department average
     time demands.
-    ders = class in turkish, i ran out of names, sorry
     '''
-    df = courses.find_courses(args_from_ui)
+    deptdf, profdf, dept = courses.find_courses(args_from_ui)
     title = "Comparison of the time demands made by " + args_from_ui['prof_fn'] + ' ' + args_from_ui['prof_ln'] + " to the departmental average"
-    course_df = df.groupby(['course']).mean()
+    course_df = profdf.groupby(['course']).mean()
     lows = course_df.low_time
+    dept_low = pd.Series({dept:deptdf.low_time.mean()})
+    lows.append(dept_low)
     avgs = course_df.avg_time
+    avgs.append(pd.Series({dept:deptdf.avg_time.mean()}))
     highs = course_df.high_time
-    n = lows.shape()[0]
-    ind = np.arange(n)
+    highs.append(pd.Series({dept:deptdf.high_time.mean()}))
+    n = lows.shape[0]
+    ind = np.arange(n + 1)
     width = 0.35
-    plt.figure(figsize = (10, 5))
+    plt.figure(figsize = (10, 7))
     p1 = plt.bar(ind, lows, width, color='#d62728')
     p2 = plt.bar(ind, avgs, width,
              bottom=lows, color = '#f442cb')
     p3 = plt.bar(ind, avgs, width,
              bottom=avgs, color = '#63cbe8')
+    p4 = plt.bar(ind, si)
     plt.ylabel('Amount of time spent')
     plt.title(title)
+    xnames = list(profdf.course.unique())
+    xnames.append(dept)
+    plt.xticks(ind, xnames, rotation = 20, fontsize = 6, ha = 'right')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
+    plt.tight_layout()
     plt.show()
 
 

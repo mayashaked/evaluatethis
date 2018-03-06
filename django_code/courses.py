@@ -89,7 +89,7 @@ def find_courses(args):
             print(primary_dept)
             dept_df = pd.read_sql_query(dept.format(primary_dept, primary_dept), db)
             prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
-            return dept_df, prof_df
+            return dept_df, prof_df, primary_dept
 
     elif len(args) == 4:
 
