@@ -20,42 +20,33 @@ def get_wc(args_from_ui):
         return pd.DataFrame()
 
     db = sqlite3.connect(DATABASE_FILENAME)
-    query = create_query(args_from_ui)
-    evals_df = pd.read_sql_query(query, db)
-    evals_df = evals_df.dropna(axis = 1, how = 'all')
-    all_ids = list(evals_df['course_id'])
-    if len(args_from_ui) == 2 and "dept" in args_from_ui:
-        query = 'SELECT course_resp FROM text WHERE '
-        for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR '
-        query = query[:-4] + ';'
-        df = pd.read_sql_query(query, db)
-        evals = list(df['course_resp'])
-    elif len(args_from_ui) == 2 and "dept" not in args_from_ui:
-        query = 'SELECT inst_resp FROM text WHERE '
-        for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR '
-        query = query[:-4] + ';'
-        df = pd.read_sql_query(query, db)
-        evals = list(df['inst_resp'])
+    if "dept" in args_from_ui and len(args_from_ui) == 2:
+        query = 'SELECT text.course_id, text.course_resp FROM text JOIN courses ON \
+        text.course_id = courses.course_id WHERE courses.dept = "' + args_from_ui['dept'] +\
+        '" AND courses.course_number = "' + args_from_ui['course_num'] + '";'
+        evals_df = pd.read_sql_query(query, db)
+        evals = list(evals_df['course_resp'])
+    elif len(args_from_ui) == 4:
+        query = 'SELECT text.course_id, text.course_resp, text.inst_resp FROM text JOIN \
+        courses JOIN profs ON text.course_id = courses.course_id AND text.course_id = \
+        profs.course_id WHERE courses.dept = "' + args_from_ui['dept'] + '" AND \
+        courses.course_number = "' + args_from_ui['course_num'] + '" AND profs.fn = \
+        "' + args_from_ui[prof_fn] + '" AND profs.ln = "' + args_from_ui[prof_ln] + '";'
+        evals_df = pd.read_sql_query(query, db)
+        evals = list(evals_df['course_resp']) + list(evals_df['inst_resp'])
     else:
-        query = 'SELECT course_resp, inst_resp FROM text WHERE '
-        for _id in all_ids:
-            query += 'course_id = ' + str(_id) + ' OR '
-        query = query[:-4]
-        df = pd.read_sql_query(query, db)
-        evals = list(df['course_resp']) + list(df['inst_resp'])
+        query = 'SELECT text.course_id, text.inst_resp FROM text JOIN profs ON \
+        text.course_id = profs.course_id WHERE profs.fn = ' + args_from_ui[prof_fn]\
+        + ' AND profs.ln = ' + args_from_ui[prof_ln] + ';'
+        evals_df = pd.read_sql_query(query, db)
+        evals = list(evals_df)
+    
+    clean = ' '.join([x for x in evals if x != None])
 
-    clean = ''
-    for eval in evals:
-        if eval != None:
-            eval = eval.lower()
-            eval = eval.strip('"@#$%^&*)(_+=][}:;.,')
-            clean += eval + ' '
-
-    wordcloud = WordCloud(stopwords = stopwords.words("english"), width = 600, height = 300).generate(clean)
+    wordcloud = WordCloud(width = 600, height = 300).generate(clean)
 
     return wordcloud
+
 
 
 
@@ -195,4 +186,5 @@ def get_profs_primary_dept(args, db):
         return depts[0]
     except:
         return ''
+
 
