@@ -94,8 +94,8 @@ def home(request):
             course_num = form_course.cleaned_data['course_num']
             if course_num:
                 args['course_num'] = course_num
-            
-        if form_prof.is_valid():   
+
+        if form_prof.is_valid():
             prof_fn = form_prof.cleaned_data['prof_fn']
             if prof_fn:
                 args['prof_fn'] = prof_fn
@@ -106,7 +106,7 @@ def home(request):
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
 
             try:
-                res = find_courses(args) #result of courses.py
+                res = find_courses(args)[0] #result of courses.py
                 context["wordcloud"] = None
                 # result of courses.py
                 wc = get_wc(args)
@@ -143,7 +143,7 @@ def home(request):
     #     context['err'] = ('Return of find_courses has the wrong data type. '
     #                       'Should be a tuple of length 4 with one string and '
     #                       'three lists.')
-    
+
     else: #create outputs (ex. tables and graphs)
         context['columns'] = res.columns
         df_rows = res.values.tolist()
@@ -152,7 +152,7 @@ def home(request):
             result.append(tuple(row))
         context['result'] = result
         context['num_results'] = len(res)
-   
+
     context['form_course'] = form_course
     context['form_prof'] = form_prof
     return render(request, 'index.html', context)
