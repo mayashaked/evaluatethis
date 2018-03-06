@@ -24,28 +24,29 @@ def prof_graph(args_from_ui):
     the time demands of every course the professor has taught to the department average
     time demands.
     '''
-    deptdf, profdf = courses.find_courses(args_from_ui)
+    deptdf, profdf, dept = courses.find_courses(args_from_ui)
     title = "Comparison of the time demands made by " + args_from_ui['prof_fn'] + ' ' + args_from_ui['prof_ln'] + " to the departmental average"
     course_df = profdf.groupby(['course']).mean()
     lows = course_df.low_time
     avgs = course_df.avg_time
     highs = course_df.high_time
     n = lows.shape[0]
-    ind = np.arange(n)
+    ind = np.arange(n + 1)
     width = 0.35
-    plt.figure(figsize = (10, 10))
+    plt.figure(figsize = (10, 7))
     p1 = plt.bar(ind, lows, width, color='#d62728')
     p2 = plt.bar(ind, avgs, width,
              bottom=lows, color = '#f442cb')
     p3 = plt.bar(ind, avgs, width,
              bottom=avgs, color = '#63cbe8')
+    p4 = plt.bar(ind, si)
     plt.ylabel('Amount of time spent')
     plt.title(title)
     xnames = list(profdf.course.unique())
-    plt.xticks(ind, xnames, rotation = 90, fontsize = 6)
+    xnames.append(dept)
+    plt.xticks(ind, xnames, rotation = 20, fontsize = 6, ha = 'right')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
-    fig, ax = plt.subplots()
-    fig.subplots_adjust(bottom = .2)
+    plt.tight_layout()
     plt.show()
 
 
