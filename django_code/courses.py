@@ -75,7 +75,7 @@ def course_and_prof_query():
     '''
     Query for eval data from specified course & professor
     '''
-    course_and_prof = "SELECT evals.*, course, fn, ln \
+    course_and_prof = "SELECT evals.*, course, year, fn, ln \
                        FROM courses JOIN profs JOIN evals JOIN crosslists \
                        ON courses.course_id = evals.course_id \
                        AND courses.course_id = crosslists.course_id \
@@ -91,7 +91,7 @@ def course_query():
     '''
     Query for eval data from specified course
     '''
-    course = "SELECT evals.*, course, fn, ln \
+    course = "SELECT evals.*, course, year, fn, ln \
               FROM courses JOIN profs JOIN evals JOIN crosslists \
               ON courses.course_id = evals.course_id \
               AND courses.course_id = crosslists.course_id \
@@ -105,7 +105,7 @@ def prof_query():
     '''
     Query for eval data from specified professor
     '''
-    prof = "SELECT evals.*, course, fn, ln \
+    prof = "SELECT evals.*, course, year, fn, ln \
             FROM courses JOIN profs JOIN evals JOIN crosslists \
             ON courses.course_id = evals.course_id \
             AND courses.course_id = crosslists.course_id \
@@ -119,7 +119,7 @@ def dept_query():
     '''
     Query for eval data from specified department
     '''
-    dept =   "SELECT evals.*, course, fn, ln \
+    dept =   "SELECT evals.*, course, year, fn, ln \
               FROM courses JOIN profs JOIN evals JOIN crosslists \
               ON courses.course_id = evals.course_id \
               AND courses.course_id = crosslists.course_id \
