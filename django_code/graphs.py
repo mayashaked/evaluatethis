@@ -69,7 +69,7 @@ def time_graph(lows, avgs, highs, title):
     plt.xticks(ind, xnames, rotation = 20, fontsize = 6, ha = 'right')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
     plt.tight_layout()
-    plt.show()
+    plt.savefig('./static/images/graph.png')
 
 
 
@@ -117,7 +117,7 @@ def course_graph(args_from_ui):
     plt.xticks(ind, xnames, rotation = 20, fontsize = 6, ha = 'right')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
     plt.tight_layout()
-    plt.show()
+    plt.savefig('./static/images/graph.png')
 
 
 
