@@ -73,7 +73,7 @@ class SearchForm_course(forms.Form):
     course_num = forms.ChoiceField(label='Course Number', choices=COURSE_NUMS, required=False)
 
 class SearchForm_rank(forms.Form):
-    rank = forms.ChoiceField(label='rank_method', choices=RANK_METHOD, required=False)
+    rank = forms.ChoiceField(label='Rank Method', choices=RANK_METHOD, required=False)
 
 class SearchForm_prof(forms.Form):
     prof_fn = forms.ChoiceField(label='Professor\'s First Name', choices=PROFS_FN, required=False)
@@ -110,11 +110,14 @@ def home(request):
                 args['prof_ln'] = prof_ln
             if form_prof.cleaned_data['show_args']:
                 context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
+        if form_rank.is_valid():
+            args['rank'] = form_rank.cleaned_data['rank']
 
-            try:
-                res = find_courses(args)[0] #result of courses.py
-                context["wordcloud"] = None
-                # result of courses.py
+        try:
+            res = find_courses(args)[0] #result of courses.py
+            context["wordcloud"] = None
+            # result of courses.py
+            if len(args) > 1:
                 wc = get_wc(args)
                 context["wordcloud"] = wc
                 plt.figure(figsize = (10, 5))
@@ -125,16 +128,16 @@ def home(request):
                 graph_it(args)
 
 
-            except Exception as e:
-                print('Exception caught')
-                bt = traceback.format_exception(*sys.exc_info()[:3])
-                context['err'] = """
-                An exception was thrown in find_courses:
-                <pre>{}
+        except Exception as e:
+            print('Exception caught')
+            bt = traceback.format_exception(*sys.exc_info()[:3])
+            context['err'] = """
+            An exception was thrown in find_courses:
+            <pre>{}
 {}</pre>
-                """.format(e, '\n'.join(bt))
+            """.format(e, '\n'.join(bt))
 
-                res = None
+            res = None
     else:
         form = SearchForm()
 
@@ -162,4 +165,5 @@ def home(request):
 
     context['form_course'] = form_course
     context['form_prof'] = form_prof
+    context['form_rank'] = form_rank
     return render(request, 'index.html', context)

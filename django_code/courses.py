@@ -27,7 +27,7 @@ def find_courses(args):
       - course_num is a string
       - prof_fn is a string
       - prof_ln is a string
-      - rank_method is one of {'avg_time', 'prof_score'}
+      - rank is one of {'avg_time', 'prof_score'}
 
     Returns pandas dataframes containing information necesssary for graphs/data
     visualizations
@@ -35,10 +35,11 @@ def find_courses(args):
     if not args:
         return [pd.DataFrame()]
 
-    if len(args) == 1:
-        return pd.read_sql_query(rank_depts().format([args['rank_method']]), db)
-
     db = sqlite3.connect(DATABASE_FILENAME)
+
+    if len(args) == 1:
+        print(args)
+        return [pd.read_sql_query(rank_depts().format(args['rank']), db)]
 
     if len(args) == 2:
 

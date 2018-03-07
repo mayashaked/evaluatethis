@@ -13,8 +13,8 @@ DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 def get_wc(args_from_ui):
 
     if not args_from_ui:
-        return pd.DataFrame()
-    print(args_from_ui)
+        return
+
     db = sqlite3.connect(DATABASE_FILENAME)
     if "dept" in args_from_ui and len(args_from_ui) == 2:
         query = 'SELECT text.course_id, text.course_resp FROM text JOIN courses ON \
@@ -42,4 +42,4 @@ def get_wc(args_from_ui):
 
     wordcloud = WordCloud(width = 600, height = 300).generate(clean)
 
-return wordcloud
+    return wordcloud
