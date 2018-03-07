@@ -33,7 +33,7 @@ def find_courses(args):
     visualizations
     '''
     if not args:
-        return pd.DataFrame()
+        return [pd.DataFrame()]
 
     if len(args) == 1:
         return pd.read_sql_query(rank_depts().format([args['rank_method']]), db)
