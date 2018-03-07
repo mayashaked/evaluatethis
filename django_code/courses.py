@@ -107,9 +107,8 @@ def prof_query():
     Query for eval data from specified professor
     '''
     prof = "SELECT evals.*, course, year, fn, ln \
-            FROM courses JOIN profs JOIN evals JOIN crosslists \
+            FROM courses JOIN profs JOIN evals \
             ON courses.course_id = evals.course_id \
-            AND courses.course_id = crosslists.course_id \
             AND courses.course_id = profs.course_id \
             WHERE profs.fn = '{}' \
             AND profs.ln = '{}';"
