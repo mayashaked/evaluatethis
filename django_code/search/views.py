@@ -63,12 +63,16 @@ DEPTS = _build_dropdown([None] + _load_res_column('dept_list.csv'))
 COURSE_NUMS = _build_dropdown([None] + _load_res_column('course_num_list.csv'))
 PROFS_FN = _build_dropdown([None] + _load_res_column('prof_fn_list.csv'))
 PROFS_LN = _build_dropdown([None] + _load_res_column('prof_ln_list.csv'))
+RANK_METHOD = [('avg_time', 'Average Time Spent'), \
+              ('prof_score', 'Average Professor Score')]
 
 
 class SearchForm_course(forms.Form):
     dept = forms.ChoiceField(label='Department', choices=DEPTS, required=False)
     course_num = forms.ChoiceField(label='Course Number', choices=COURSE_NUMS, required=False)
 
+class SearchForm_rank(forms.Form):
+    rank = forms.ChoiceField(label='rank_method', choices=RANK_METHOD, required=False)
 
 class SearchForm_prof(forms.Form):
     prof_fn = forms.ChoiceField(label='Professor\'s First Name', choices=PROFS_FN, required=False)
@@ -84,6 +88,7 @@ def home(request):
         # create a form instance and populate it with data from the request:
         form_course = SearchForm_course(request.GET)
         form_prof = SearchForm_prof(request.GET)
+        form_rank = SearchForm_rank(request.GET)
         # check whether it's valid:
         args = {}
         if form_course.is_valid():
