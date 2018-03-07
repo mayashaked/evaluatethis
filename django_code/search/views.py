@@ -15,6 +15,7 @@ from django import forms
 
 from courses import find_courses
 from gen_wordcloud import get_wc
+from graphs import graph_it
 
 NOPREF_STR = 'No preference'
 RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
@@ -121,6 +122,7 @@ def home(request):
                 plt.axis("off")
                 plt.savefig('./static/images/wordcloud.png')
                 plt.close()
+                graph_it(args)
 
 
             except Exception as e:
