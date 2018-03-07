@@ -37,14 +37,17 @@ def time_lists(small_df, dept_df, dept):
     lows = small_df.low_time
     dept_low = dept_df.low_time.mean()
     lows = lows.append(pd.Series({dept:dept_low}))
+    print(dept_low)
 
     avgs = small_df.avg_time
-    dept_avg = dept_df.low_time.mean()
+    dept_avg = dept_df.avg_time.mean()
     avgs = avgs.append(pd.Series({dept:dept_avg}))
+    print(dept_avg)
 
     highs = small_df.high_time
     dept_high = dept_df.high_time.mean()
     highs = highs.append(pd.Series({dept:dept_high}))
+    print(dept_high)
 
     return lows, avgs, highs
 
@@ -85,7 +88,7 @@ def course_graph(args_from_ui):
     time demands. If the course is crosslisted, this may also include the average time demands of the other department(s).
     '''
     course_df, dept_df = courses.find_courses(args_from_ui)
-    title = "lol this is a title"
+    title = "Time demands made by instructors of " + args_from_ui['dept'] + " " + args_from_ui['course_num'] + " w/ departmental average"
     dept = args_from_ui['dept']
     small_df, year = get_small_df(course_df, "course")
     lows, avgs, highs = time_lists(small_df, dept_df, dept)
@@ -114,11 +117,6 @@ def course_graph(args_from_ui):
 
 
 
-    
-
-
-
-
 def course_prof_graph(args_from_ui):
     '''
     If the user searches by course and professor, this code will produce a graph that compares the time 
@@ -126,7 +124,7 @@ def course_prof_graph(args_from_ui):
     other professors who  have taught this course, departmental average time demands, and this professors average
     time demands.
     '''
-    df = courses.find_courses(args_from_ui)
+    course_and_prof_df, dept_df, course_df, prof_df = courses.find_courses(args_from_ui)
 
 
 
