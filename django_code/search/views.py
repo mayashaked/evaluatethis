@@ -118,13 +118,7 @@ def home(request):
             context["wordcloud"] = None
             # result of courses.py
             if len(args) > 1:
-                wc = get_wc(args)
-                context["wordcloud"] = wc
-                plt.figure(figsize = (10, 5))
-                plt.imshow(wc)
-                plt.axis("off")
-                plt.savefig('./static/images/wordcloud.png')
-                plt.close()
+                get_wc(args)
                 graph_it(args)
 
 
