@@ -27,12 +27,16 @@ def find_courses(args):
       - course_num is a string
       - prof_fn is a string
       - prof_ln is a string
+      - rank_method is one of {'avg_time', 'prof_score'}
 
     Returns pandas dataframes containing information necesssary for graphs/data
     visualizations
     '''
     if not args:
         return pd.DataFrame()
+
+    if len(args) == 1:
+        return pd.read_sql_query(rank_depts().format([args['rank_method']]), db)
 
     db = sqlite3.connect(DATABASE_FILENAME)
 
@@ -123,6 +127,19 @@ def dept_query():
               WHERE (courses.dept = '{}' or crosslists.crosslist = '{}');"
 
     return dept
+
+def rank_depts():
+    '''
+    Query to rank departments by time or professor quality
+    '''
+
+    rank_dep =  "SELECT dept, AVG(avg_time), AVG(prof_score) \
+                FROM courses JOIN evals \
+                ON courses.course_id = evals.course_id \
+                GROUP BY dept HAVING AVG(avg_time) > .1 \
+                AND COUNT(*) > 10 ORDER BY AVG('{}');"
+
+    return rank_dep
 
 def get_header(cursor):
     '''
