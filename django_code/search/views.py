@@ -12,6 +12,7 @@ from django import forms
 
 from courses import find_courses
 from gen_wordcloud import get_wc
+import score_graphs
 #from graphs import graph_it
 
 NOPREF_STR = 'No preference'
@@ -125,13 +126,12 @@ def home(request):
                     result.append(tuple(row))
                 context['result'] = result
                 context['num_results'] = len(res)
-                if len(res) == 0: # the search resulted in no classes
-                    context["wordcloud"] = None
-                else: # there are courses to use to generate the images
-                    context["wordcloud"] = None
+                if len(res) != 0:
+                    # there are courses to use to generate the images
                     # result of courses.py
                     get_wc(args)
                     #graph_it(args)
+                    score_graphs.non_time_graphs(args)
 
             except Exception as e:
                 print('Exception caught')

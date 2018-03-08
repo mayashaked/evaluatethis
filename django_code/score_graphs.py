@@ -123,7 +123,7 @@ def prof_score_graph(args_from_ui):
     title = prof + "'s aggregated scores compared to dept avg."
     plt.title(title)
     plt.ylabel("Aggregated scores from reviews")
-    plt.show()
+    plt.savefig('./static/images/profscore.png')
 
 def prof_sentiment_graph(args_from_ui):
     '''
@@ -135,7 +135,7 @@ def prof_sentiment_graph(args_from_ui):
     title = prof + "'s sentiment scores compared to dept avg."
     plt.title(title)
     plt.ylabel("Sentiment scores from reviews")
-    plt.show()
+    plt.savefig('./static/images/profsent.png')
 
 def course_sentiment_graph(args_from_ui):
     '''
@@ -148,7 +148,7 @@ def course_sentiment_graph(args_from_ui):
     title = "Sentiment scores for " + course + "compared to dept avg."
     plt.title(title)
     plt.ylabel("Sentiment scores from reviews")
-    plt.show()
+    plt.savefig('./static/images/coursesent.png')
 
 def course_score_graph(args_from_ui):
     '''
@@ -161,7 +161,7 @@ def course_score_graph(args_from_ui):
     title = "Aggregated scores for " + course + "compared to dept avg."
     plt.title(title)
     plt.ylabel("Aggregated scores from reviews")
-    plt.show()
+    plt.savefig('./static/images/coursescore.png')
 
 def non_time_graphs(args_from_ui):
     if 'dept' in args_from_ui and 'course_num' in args_from_ui and len(args_from_ui) == 2:
@@ -171,3 +171,7 @@ def non_time_graphs(args_from_ui):
     if 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui and len(args_from_ui) == 2:
         prof_score_graph(args_from_ui)
         prof_sentiment_graph(args_from_ui)
+
+    elif len(args) == 4:
+        course_and_prof_score_graph(args_from_ui)
+        course_and_prof_sentiment_graph(args_from_ui)
