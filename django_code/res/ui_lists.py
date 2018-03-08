@@ -13,21 +13,17 @@ def generate_lists():
     course_num = c.execute('''SELECT DISTINCT course_number FROM courses 
         WHERE course_number IS NOT NULL and course_number <> "" ORDER BY 
         course_number''').fetchall()
+    course_name = c.execute('''SELECT DISTINCT course FROM courses 
+        WHERE course IS NOT NULL and course <> "" ORDER BY 
+        course''').fetchall()
     prof_ln = c.execute('''SELECT DISTINCT ln FROM profs WHERE 
         ln IS NOT NULL and ln <> "" ORDER BY ln''').fetchall()
     prof_fn = c.execute('''SELECT DISTINCT fn FROM profs WHERE 
         fn IS NOT NULL and fn <> "" ORDER BY fn''').fetchall()
 
-    course_info = c.execute('''SELECT dept, course_number, course FROM courses''').fetchall()
-
     connection.close()
 
     # write lists of unique values to file
-    f = open('course_info.csv', 'w')
-    w = csv.writer(f, delimiter="|")
-    for row in course_info:
-        w.writerow(row)
-    f.close()
 
     f = open('dept_list.csv', 'w')
     w = csv.writer(f, delimiter="|")
@@ -38,6 +34,12 @@ def generate_lists():
     f = open('course_num_list.csv', 'w')
     w = csv.writer(f, delimiter="|")
     for row in course_num:
+        w.writerow(row)
+    f.close()
+
+    f = open('course_name_list.csv', 'w')
+    w = csv.writer(f, delimiter="|")
+    for row in course_name:
         w.writerow(row)
     f.close()
 
