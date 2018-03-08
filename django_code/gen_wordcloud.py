@@ -1,3 +1,14 @@
+#-------------------------------------------------------------------------------
+# Name:        gen_wordcloud
+#
+# Purpose:     Generates a wordcloud from written responses to questions about 
+#			   the professor, the course, or both, depending on what was 
+#			   searched for
+#
+# Author:      Maya Shaked
+#
+# Created:     03/04/2018
+#-------------------------------------------------------------------------------
 import sqlite3
 import os
 import pandas as pd
@@ -11,6 +22,19 @@ DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 
 
 def get_wc(args_from_ui):
+    '''
+    Takes a dictionary containing search criteria and returns a 
+    wordcloud based on the text responses for the matching
+    criteria
+
+      - dept is a string
+      - course_num is a string
+      - prof_fn is a string
+      - prof_ln is a string
+
+    Doesn't return anything,  but rather saves the Wordcloud object 
+    into the 'static' folder
+    '''
     if not args_from_ui:
         return
 
