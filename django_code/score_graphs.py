@@ -193,4 +193,10 @@ def course_and_prof_score_graph(args_from_ui):
     time demands.
     '''
     course_and_prof_df, dept_df, course_df, prof_df = courses.find_courses(args_from_ui)
+    columns_not_to_graph = ['num_recommend', 
+                            'num_dont_recommend', 
+                            'good_inst', 
+                            'bad_inst']
+    course_and_prof_df.dropna(axis = (1), how = "all", inplace = True)
+    columns = list(course_and_prof_df.columns)
     
