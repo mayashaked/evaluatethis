@@ -13,7 +13,7 @@ from django import forms
 from courses import find_courses
 from gen_wordcloud import get_wc
 import score_graphs
-#from graphs import graph_it
+from graphs import graph_it
 
 NOPREF_STR = 'No preference'
 RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
@@ -130,7 +130,7 @@ def home(request):
                     # there are courses to use to generate the images
                     # result of courses.py
                     get_wc(args)
-                    #graph_it(args)
+                    graph_it(args)
                     score_graphs.non_time_graphs(args)
 
             except Exception as e:

@@ -163,15 +163,34 @@ def course_score_graph(args_from_ui):
     plt.ylabel("Aggregated scores from reviews")
     plt.savefig('./static/images/coursescore.png')
 
+def course_and_prof_score_graph(args_from_ui):
+    pass
+
+def course_and_prof_sentiment_graph(args_from_ui):
+    pass
+
 def non_time_graphs(args_from_ui):
-    if 'dept' in args_from_ui and 'course_num' in args_from_ui and len(args_from_ui) == 2:
-        course_score_graph(args_from_ui)
-        course_sentiment_graph(args_from_ui)
+    if len(args_from_ui) == 2:
+        if 'dept' in args_from_ui and 'course_num' in args_from_ui:
+            course_score_graph(args_from_ui)
+            course_sentiment_graph(args_from_ui)
 
-    if 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui and len(args_from_ui) == 2:
-        prof_score_graph(args_from_ui)
-        prof_sentiment_graph(args_from_ui)
+        elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
+            prof_score_graph(args_from_ui)
+            prof_sentiment_graph(args_from_ui)
 
-    elif len(args) == 4:
+    else:
         course_and_prof_score_graph(args_from_ui)
         course_and_prof_sentiment_graph(args_from_ui)
+
+
+
+def course_and_prof_score_graph(args_from_ui):
+    '''
+    If the user searches by course and professor, this code will produce a graph that compares the scores 
+    for this professor averaged over every time they taught the course, the time demands made by
+    other professors who  have taught this course, departmental average time demands, and this professor's average
+    time demands.
+    '''
+    course_and_prof_df, dept_df, course_df, prof_df = courses.find_courses(args_from_ui)
+    
