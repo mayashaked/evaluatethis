@@ -1,0 +1,69 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Course Re-evaluations</title>
+        <link rel="stylesheet" type="text/css" href="{% static "/main.css" %}" />
+    </head>
+    <body>
+        <div id="header">
+            <h1>Course Re-evaluations</h1>
+            <h1>A UChicago Course Evaluations Summarizer</h1>
+        </div>
+        <div class="frame">
+            <p>Search by course, professor, or both.</p>
+            <p>To search by course, select the department and either the course number or name.</p>
+            <form method="get">
+                {% csrf_token %}
+                <table class="form_course">
+                    {{ form_course }}
+                </table>
+                <p>To search by professor, enter the professor's first and last name.</p>
+                <table class="form_prof">
+                    {{ form_prof.as_table }}
+                </table>
+                <p>Don't have a particular course or professor in mind? View department rankings instead!</p>
+                <table class="form_rank">
+                    {{ form_rank.as_table }}
+                </table>
+                <input type="submit" value="Submit" />
+            </form>
+        </div>
+
+        {% if args %}
+        <div class="args">
+            <pre>{{ args }}</pre>
+        </div>
+        {% endif %}
+
+        {% if err %}
+        <div class="error">
+            {{ err|safe }}
+        </div>
+        {% endif %}
+
+        <div class="frame">
+            {% if result != None %}
+            <p class="num_results", style="font-size:18px;"> Summary of {{ num_results }} evaluations.</p>
+            <div class="results">
+                <img src="{% static "/images/wordcloud.png" %}" />
+                <img src="{% static "/images/graph.png" %}" />
+                <table class="courses">
+                    <tr>
+                        {% for col in columns %}
+                        <th>{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for entry in result %}
+                    <tr>
+                        {% for col in entry %}
+                        <td>{{ col }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </body>
+</html>
