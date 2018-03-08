@@ -126,7 +126,7 @@ def home(request):
                     result.append(tuple(row))
                 context['result'] = result
                 context['num_results'] = len(res)
-                if len(res) != 0:
+                if len(res) != 0 and 'rank' not in args:
                     # there are courses to use to generate the images
                     # result of courses.py
                     get_wc(args)
