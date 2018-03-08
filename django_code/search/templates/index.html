@@ -9,22 +9,20 @@
         <div id="header">
             <h1>Course Re-evaluations</h1>
             <h1>A UChicago Course Evaluations Summarizer</h1>
-            <h1>Search by course, professor, or both.</h1>
         </div>
         <div class="frame">
+            <p>Search by course, professor, or both.</p>
+            <p>To search by course, select the department and either the course number or name.</p>
             <form method="get">
                 {% csrf_token %}
                 <table class="form_course">
                     {{ form_course }}
                 </table>
-                <p>and/or</p>
+                <p>To search by professor, enter the professor's first and last name.</p>
                 <table class="form_prof">
                     {{ form_prof.as_table }}
                 </table>
-                <table class="form">
-                    {{ form.as_table }}
-                </table>
-                <p>Or, view department rankings.</p>
+                <p>Don't have a particular course or professor in mind? View department rankings instead!</p>
                 <table class="form_rank">
                     {{ form_rank.as_table }}
                 </table>
