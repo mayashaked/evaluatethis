@@ -34,7 +34,6 @@ def get_small_df(dataframe, prof_or_course):
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['fn', 'ln']).mean()
 
-
     return dataframe, current_year - timespan
 
 def time_lists(small_df, dept_df, dept):
@@ -72,7 +71,6 @@ def time_graph(lows, avgs, highs, title):
     plt.savefig('./static/images/graph.png')
 
 
-
 def prof_graph(args_from_ui):
     '''
     If the user searches by professor only, this code will produce a graph comparing
@@ -96,7 +94,6 @@ def course_graph(args_from_ui):
     title = "Time demands made by instructors of " + args_from_ui['dept'] + " " + args_from_ui['course_num'] + " w/ departmental average"
     dept = args_from_ui['dept']
     small_df, year = get_small_df(course_df, "course")
-    print(small_df)
     lows, avgs, highs = time_lists(small_df, dept_df, dept)
     n = lows.shape[0]
     ind = np.arange(n)
@@ -118,7 +115,6 @@ def course_graph(args_from_ui):
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
     plt.tight_layout()
     plt.savefig('./static/images/graph.png')
-
 
 
 def course_prof_graph(args_from_ui):
@@ -153,6 +149,3 @@ def course_prof_graph(args_from_ui):
     highs = highs.append(pd.Series({prof:prof_df.high_time.mean()}))
 
     time_graph(lows, avgs, highs, title)
-
-
-

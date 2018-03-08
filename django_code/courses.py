@@ -17,7 +17,6 @@ DATA_DIR = os.path.dirname(__file__)
 DATABASE_FILENAME = os.path.join(DATA_DIR, 'reevaluations.db')
 
 def find_courses(args):
-
     '''
     Takes a dictionary containing search criteria and returns courses
     that match the criteria.  The dictionary will contain some of the
@@ -38,23 +37,28 @@ def find_courses(args):
     db = sqlite3.connect(DATABASE_FILENAME)
 
     if len(args) == 1:
-        print(args)
         return [pd.read_sql_query(rank_depts().format(args['rank']), db)]
 
     if len(args) == 2:
 
         if 'dept' in args and 'course_num' in args:
             dept = dept_query()
-            course = course_query()
+            course = course_num_query()
             dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
             course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
+            return course_df, dept_df
+
+        elif 'dept' in args and 'course_name' in args:
+            dept = dept_query()
+            course = course_name_query()
+            dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
+            course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_name']), db)
             return course_df, dept_df
 
         elif 'prof_fn' in args and 'prof_ln' in args:
             prof = prof_query()
             dept = dept_query()
             primary_dept = get_profs_primary_dept(args, db)
-            print(primary_dept)
             dept_df = pd.read_sql_query(dept.format(primary_dept, primary_dept), db)
             prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
             return prof_df, dept_df, primary_dept
@@ -63,20 +67,26 @@ def find_courses(args):
 
         dept = dept_query()
         prof = prof_query()
-        course = course_query()
-        course_and_prof = course_and_prof_query()
+        if 'course_num' in args:
+          course = course_num_query()
+          course_num_and_prof = course_num_and_prof_query()
+          course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
+          course_and_prof_df = pd.read_sql_query(course_num_and_prof.format(args['dept'], args['dept'], args['course_num'], args['prof_fn'], args['prof_ln']), db)
+        elif 'course_name' in args:
+          course = course_name_query()
+          course_name_and_prof = course_name_and_prof_query()
+          course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_name']), db)
+          course_and_prof_df = pd.read_sql_query(course_name_and_prof.format(args['dept'], args['dept'], args['course_name'], args['prof_fn'], args['prof_ln']), db)
         dept_df = pd.read_sql_query(dept.format(args['dept'], args['dept']), db)
         prof_df = pd.read_sql_query(prof.format(args['prof_fn'], args['prof_ln']), db)
-        course_df = pd.read_sql_query(course.format(args['dept'], args['dept'], args['course_num']), db)
-        course_and_prof_df = pd.read_sql_query(course_and_prof.format(args['dept'], args['dept'], args['course_num'], args['prof_fn'], args['prof_ln']), db)
         return course_and_prof_df, dept_df, course_df, prof_df
 
 
-def course_and_prof_query():
+def course_num_and_prof_query():
     '''
     Query for eval data from specified course & professor
     '''
-    course_and_prof = "SELECT evals.*, course, year, fn, ln \
+    course_num_and_prof = "SELECT evals.*, course, year, fn, ln \
                        FROM courses JOIN profs JOIN evals JOIN crosslists \
                        ON courses.course_id = evals.course_id \
                        AND courses.course_id = crosslists.course_id \
@@ -86,11 +96,29 @@ def course_and_prof_query():
                        AND profs.fn = '{}' \
                        AND profs.ln = '{}';"
 
-    return course_and_prof
+    return course_num_and_prof
 
-def course_query():
+
+def course_name_and_prof_query():
     '''
-    Query for eval data from specified course
+    Query for eval data from specified course & professor
+    '''
+    course_name_and_prof = "SELECT evals.*, course, year, fn, ln \
+                       FROM courses JOIN profs JOIN evals JOIN crosslists \
+                       ON courses.course_id = evals.course_id \
+                       AND courses.course_id = crosslists.course_id \
+                       AND courses.course_id = profs.course_id \
+                       WHERE (courses.dept = '{}' or crosslists.crosslist = '{}') \
+                       AND courses.course = '{}' \
+                       AND profs.fn = '{}' \
+                       AND profs.ln = '{}';"
+
+    return course_name_and_prof
+
+
+def course_num_query():
+    '''
+    Query for eval data from specified course number
     '''
     course = "SELECT evals.*, course, year, fn, ln \
               FROM courses JOIN profs JOIN evals JOIN crosslists \
@@ -101,6 +129,22 @@ def course_query():
               AND courses.course_number = '{}';"
 
     return course
+
+
+def course_name_query():
+    '''
+    Query for eval data from specified course
+    '''
+    course = "SELECT evals.*, course, year, fn, ln \
+              FROM courses JOIN profs JOIN evals JOIN crosslists \
+              ON courses.course_id = evals.course_id \
+              AND courses.course_id = crosslists.course_id \
+              AND courses.course_id = profs.course_id \
+              WHERE (courses.dept = '{}' or crosslists.crosslist = '{}') \
+              AND courses.course = '{}';"
+
+    return course
+
 
 def prof_query():
     '''
@@ -115,6 +159,7 @@ def prof_query():
 
     return prof
 
+
 def dept_query():
     '''
     Query for eval data from specified department
@@ -128,11 +173,11 @@ def dept_query():
 
     return dept
 
+
 def rank_depts():
     '''
     Query to rank departments by time or professor quality
     '''
-
     rank_dep =  "SELECT dept, AVG(avg_time), AVG(prof_score) \
                 FROM courses JOIN evals \
                 ON courses.course_id = evals.course_id \
@@ -140,6 +185,7 @@ def rank_depts():
                 AND COUNT(*) > 10 ORDER BY AVG('{}');"
 
     return rank_dep
+
 
 def get_header(cursor):
     '''
@@ -165,6 +211,7 @@ def clean_header(s):
 
     return s
 
+
 def get_profs_primary_dept(args, db):
     '''
     Query database to find which dept a professor usually teaches under.
@@ -179,5 +226,3 @@ def get_profs_primary_dept(args, db):
         return depts[0]
     except:
         return ''
-
-
