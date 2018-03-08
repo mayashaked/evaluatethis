@@ -2,28 +2,27 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Course Catalog Search</title>
+        <title>Course Re-evaluations</title>
         <link rel="stylesheet" type="text/css" href="{% static "/main.css" %}" />
     </head>
     <body>
         <div id="header">
             <h1>Course Re-evaluations</h1>
-            <h1>Search by course and/or professor!</h1>
+            <h1>A UChicago Course Evaluations Summarizer</h1>
         </div>
         <div class="frame">
+            <p>Search by course, professor, or both.</p>
+            <p>To search by course, select the department and either the course number or name.</p>
             <form method="get">
                 {% csrf_token %}
                 <table class="form_course">
                     {{ form_course }}
                 </table>
-                <p>and/or</p>
+                <p>To search by professor, enter the professor's first and last name.</p>
                 <table class="form_prof">
                     {{ form_prof.as_table }}
                 </table>
-                <table class="form">
-                    {{ form.as_table }}
-                </table>
-                <p>Or, check out awesome department rankings!!!!!!!</p>
+                <p>Don't have a particular course or professor in mind? View department rankings instead!</p>
                 <table class="form_rank">
                     {{ form_rank.as_table }}
                 </table>
@@ -45,9 +44,14 @@
 
         <div class="frame">
             {% if result != None %}
+            <p class="num_results", style="font-size:18px;"> Summary of {{ num_results }} evaluations.</p>
             <div class="results">
                 <img src="{% static "/images/wordcloud.png" %}" />
                 <img src="{% static "/images/graph.png" %}" />
+                <img src="{% static "/images/profscore.png" %}" />
+                <img src="{% static "/images/profsent.png" %}" />
+                <img src="{% static "/images/coursescore.png" %}" />
+                <img src="{% static "/images/coursesent.png" %}" />
                 <table class="courses">
                     <tr>
                         {% for col in columns %}
@@ -63,7 +67,6 @@
                     {% endfor %}
                 </table>
             </div>
-            <p class="num_results">Results: {{ num_results }}</p>
             {% endif %}
         </div>
     </body>
