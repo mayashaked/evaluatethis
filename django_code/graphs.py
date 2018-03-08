@@ -11,10 +11,11 @@ if you search by dept, you don't want info about a specific course or prof
 '''
 
 def graph_it(args_from_ui):
-    if "prof_fn" in args_from_ui and "prof_ln" in args_from_ui and len(args_from_ui) == 2:
-        prof_graph(args_from_ui)
-    if "dept" in args_from_ui and "course_num" in args_from_ui and len(args_from_ui) == 2:
-        course_graph(args_from_ui)
+    if len(args_from_ui) == 2:
+        if "prof_fn" in args_from_ui and "prof_ln" in args_from_ui:
+            prof_graph(args_from_ui)
+        elif "dept" in args_from_ui and "course_num" in args_from_ui:
+            course_graph(args_from_ui)
     else:
         course_prof_graph(args_from_ui)
 
@@ -33,7 +34,6 @@ def get_small_df(dataframe, prof_or_course):
             timespan -= 1
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['fn', 'ln']).mean()
-
 
     return dataframe, current_year - timespan
 
@@ -72,7 +72,6 @@ def time_graph(lows, avgs, highs, title):
     plt.savefig('./static/images/graph.png')
 
 
-
 def prof_graph(args_from_ui):
     '''
     If the user searches by professor only, this code will produce a graph comparing
@@ -96,7 +95,6 @@ def course_graph(args_from_ui):
     title = "Time demands made by instructors of " + args_from_ui['dept'] + " " + args_from_ui['course_num'] + " w/ departmental average"
     dept = args_from_ui['dept']
     small_df, year = get_small_df(course_df, "course")
-    print(small_df)
     lows, avgs, highs = time_lists(small_df, dept_df, dept)
     n = lows.shape[0]
     ind = np.arange(n)
@@ -120,12 +118,11 @@ def course_graph(args_from_ui):
     plt.savefig('./static/images/graph.png')
 
 
-
 def course_prof_graph(args_from_ui):
     '''
     If the user searches by course and professor, this code will produce a graph that compares the time 
     demands made by this professor averaged over every time they taught the course, the time demands made by
-    other professors who  have taught this course, departmental average time demands, and this professors average
+    other professors who  have taught this course, departmental average time demands, and this professor's average
     time demands.
     '''
     course_and_prof_df, dept_df, course_df, prof_df = courses.find_courses(args_from_ui)
@@ -153,6 +150,3 @@ def course_prof_graph(args_from_ui):
     highs = highs.append(pd.Series({prof:prof_df.high_time.mean()}))
 
     time_graph(lows, avgs, highs, title)
-
-
-
