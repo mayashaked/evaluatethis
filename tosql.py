@@ -1,3 +1,15 @@
+#-------------------------------------------------------------------------------
+# Name:        tosql
+#
+# Purpose:     Generates a wordcloud from written responses to questions about 
+#              the professor, the course, or both, depending on what was 
+#              searched for
+#
+# Author:      Maya Shaked
+#
+# Created:     02/15/2018
+#-------------------------------------------------------------------------------
+
 import pandas as pd
 import sqlite3
 import aggregate_numerical_data as agg_num
@@ -7,10 +19,22 @@ import dyadic_partitioning as dy
 EVALS_PART_1 = 'evals_json_version_5_part1'
 EVALS_PART_2 = 'evals_json_version_5_part2'
 SQL_DB_PATH = 'reevaluations.db'
-STOPWORDS = stopwords("english") + ['class', 'classes', 'professor', 'professors' 'course', 'courses', 'ta', 'tas']
+STOPWORDS = stopwords("english") + ['class', 'classes', 'professor', \
+'professors' 'course', 'courses', 'ta', 'tas']
 
+def pre_process(sql_db_path, evals_part_1, evals_part_2):
+    '''
+    Takes the SQL database path as well as the two json files containing 
+    all the evaluations and adds the numerical scores and sentiment analysis 
+    scores from aggregate_numerical_scores. adds the dyadic partitioning 
+    results. and cleans the dataframe
 
-def pre_process(sql_db_path, evals_part_1, evals_part_2)
+      - sql_db_pth is a string
+      - evals_part_1 is a string
+      - evals_part_2 is a string
+
+    Returns a database object and a pandas dataframe
+    '''
 
     db = sqlite3.connect(sql_db_path)
     j1 = pd.read_json(evals_part_1, convert_dates = False)
@@ -41,6 +65,16 @@ def pre_process(sql_db_path, evals_part_1, evals_part_2)
 
 
 def gen_courses(j, db):
+    '''
+    Takes the evaluations pandas dataframe and a database object 
+    and creates our 'courses' table
+
+      - j is a pandas DataFrame
+      - db is a sqlite3 database object
+
+    Does not return anything, but rather creates the 'courses' table 
+    in our SQL database
+    '''
 
     courses = j[['course', 'course_number', 'dept', 'section', 'term', 'year']]
 
@@ -49,6 +83,16 @@ def gen_courses(j, db):
     pass
 
 def gen_profs(j, db):
+    '''
+    Takes the evaluations pandas dataframe and a database object 
+    and creates our 'profs' table
+
+      - j is a pandas DataFrame
+      - db is a sqlite3 database object
+
+    Does not return anything, but rather creates the 'profs' table 
+    in our SQL database
+    '''
 
 
     profs = []
@@ -67,6 +111,16 @@ def gen_profs(j, db):
     pass
 
 def gen_crosslists(j, db):
+    '''
+    Takes the evaluations pandas dataframe and a database object 
+    and creates our 'crosslists' table
+
+      - j is a pandas DataFrame
+      - db is a sqlite3 database object
+
+    Does not return anything, but rather creates the 'crosslists' table 
+    in our SQL database
+    '''
 
     crosslists = []
     for ind, row in j.iterrows():
@@ -84,10 +138,20 @@ def gen_crosslists(j, db):
     pass
 
 def gen_evals(j, db):
+    '''
+    Takes the evaluations pandas dataframe and a database object 
+    and creates our 'evals' table
+
+      - j is a pandas DataFrame
+      - db is a sqlite3 database object
+
+    Does not return anything, but rather creates the 'evals' table 
+    in our SQL database
+    '''
 
     evals = []
     for ind, row in j.iterrows():
-        eval = [ind, None, None, None, None, 0, None, None, None, None, None, None, None, None, None, None, None, None]
+        eval = [ind, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None]
         eval[1] = row['instructor_score']
         eval[2] = row['assignments_score']
         eval[3] = row['overall_score']
@@ -124,6 +188,17 @@ def gen_evals(j, db):
     pass
 
 def gen_text(j, db):
+    '''
+    Takes the evaluations pandas dataframe and a database object 
+    and creates our 'text' table
+
+      - j is a pandas DataFrame
+      - db is a sqlite3 database object
+
+    Does not return anything, but rather creates the 'text' table 
+    in our SQL database
+    '''
+
     j = j[['course_responses', 'instructor_responses']]
 
     all_responses = []
