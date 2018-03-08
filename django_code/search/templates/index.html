@@ -2,13 +2,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Course Catalog Search</title>
+        <title>Course Re-evaluations</title>
         <link rel="stylesheet" type="text/css" href="{% static "/main.css" %}" />
     </head>
     <body>
         <div id="header">
             <h1>Course Re-evaluations</h1>
-            <h1>Search by course and/or professor!</h1>
+            <h1>A UChicago Course Evaluations Summarizer</h1>
+            <h1>Search by course, professor, or both.</h1>
         </div>
         <div class="frame">
             <form method="get">
@@ -23,7 +24,7 @@
                 <table class="form">
                     {{ form.as_table }}
                 </table>
-                <p>Or, check out awesome department rankings!!!!!!!</p>
+                <p>Or, view department rankings.</p>
                 <table class="form_rank">
                     {{ form_rank.as_table }}
                 </table>
@@ -45,6 +46,7 @@
 
         <div class="frame">
             {% if result != None %}
+            <p class="num_results", style="font-size:18px;"> Summary of {{ num_results }} evaluations.</p>
             <div class="results">
                 <img src="{% static "/images/wordcloud.png" %}" />
                 <img src="{% static "/images/graph.png" %}" />
@@ -63,7 +65,6 @@
                     {% endfor %}
                 </table>
             </div>
-            <p class="num_results">Results: {{ num_results }}</p>
             {% endif %}
         </div>
     </body>
