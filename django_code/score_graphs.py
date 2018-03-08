@@ -6,7 +6,11 @@ import graphs
 
 def df_maker(args_from_ui, sentiment_or_score, graph_type):
     '''
-    Where graph_type is "prof" or "course"
+    Uses the query functions in courses to get a dataframe corresponding to the user's search, 
+    then returns a dataframe reduced by get_small_df that includes the columns required by the
+    different possible types of graphs (specified by sentiment_or_score, where the two options
+    are "sentiment" or "score"). 
+    Depending on the user's input, graph_type can be either "prof" or "course."
     '''
     if graph_type == "prof":
         prof_df, dept_df, dept = courses.find_courses(args_from_ui)
@@ -16,7 +20,10 @@ def df_maker(args_from_ui, sentiment_or_score, graph_type):
         dept = args_from_ui['dept']
         small_df, year = get_small_df(course_df, graph_type)
 
-    columns_not_to_graph = ['num_recommend', 'num_dont_recommend', 'good_inst', 'bad_inst']
+    columns_not_to_graph = ['num_recommend', 
+                            'num_dont_recommend', 
+                            'good_inst', 
+                            'bad_inst']
 
     small_df.dropna(axis = (1), how = "all", inplace = True)
     if sentiment_or_score == "sentiment":
@@ -59,8 +66,14 @@ def df_maker(args_from_ui, sentiment_or_score, graph_type):
     return continuous_df
 
 def get_small_df(dataframe, prof_or_course):
+    '''
+    Drops results from successive years from the dataframe so that the resulting graph
+    will not have more than 10 groups of columns. 
+    This happens in slightly different ways corresponding to the data visualization 
+    requirements for "prof" or "course" type graphs. 
+    '''
     current_year = 2018
-    timespan = 5
+    timespan = 15
     if prof_or_course == "prof":
         while dataframe.course.unique().shape[0] > 10:
             timespan -= 1
@@ -78,6 +91,8 @@ def get_small_df(dataframe, prof_or_course):
 
 def graph_from_df(continuous_df):
     '''
+    Given a dataframe of continuous non-time data, creates a grouped bar graph displaying scores 
+    and sentiment scores for that data. 
     Different versions of matplotlib require you to switch out "left" for "x" sometimes in 
     the line that starts with "bar = "
     The error that will let you know that this is happening is: "bar() missing 1 required positional argument"
@@ -95,24 +110,58 @@ def graph_from_df(continuous_df):
     xnames = list(continuous_df.axes[0])
     plt.xticks(ind, xnames, rotation = 10, fontsize = 10, ha = 'right')
     plt.legend(bars, continuous_df.axes[1])
-    plt.show()
+    return plt
 
 
 def prof_score_graph(args_from_ui):
+    '''
+    Creates a graph for a professor's scores compared to the department average. 
+    '''
     continuous_df = df_maker(args_from_ui, "score", "prof")
-    graph_from_df(continuous_df)
-    
+    plt = graph_from_df(continuous_df)
+    prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
+    title = prof + "'s aggregated scores compared to dept avg."
+    plt.title(title)
+    plt.ylabel("Aggregated scores from reviews")
+    plt.show()
+
 def prof_sentiment_graph(args_from_ui):
+    '''
+    Creates a graph for a professor's sentiment scores compared to the department average. 
+    '''
     continuous_df = df_maker(args_from_ui, "sentiment", "prof")
-    graph_from_df(continuous_df)
-    
+    plt = graph_from_df(continuous_df)
+    prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
+    title = prof + "'s sentiment scores compared to dept avg."
+    plt.title(title)
+    plt.ylabel("Sentiment scores from reviews")
+    plt.show()
+
 def course_sentiment_graph(args_from_ui):
+    '''
+    Creates a graph for the sentiment scores for all professors that have taught a
+    class compared to the department average. 
+    '''
     continuous_df = df_maker(args_from_ui, "sentiment", "course")
-    graph_from_df(continuous_df)
-    
+    plt = graph_from_df(continuous_df)
+    course = args_from_ui['dept'] + " " + args_from_ui['course_num']
+    title = "Sentiment scores for " + course + "compared to dept avg."
+    plt.title(title)
+    plt.ylabel("Sentiment scores from reviews")
+    plt.show()
+
 def course_score_graph(args_from_ui):
+    '''
+    Creates a graph for the scores for all professors that have taught a class compared to
+    the department average. 
+    '''
     continuous_df = df_maker(args_from_ui, "score", "course")
-    graph_from_df(continuous_df)
+    plt = graph_from_df(continuous_df)
+    course = args_from_ui['dept'] + " " + args_from_ui['course_num']
+    title = "Aggregated scores for " + course + "compared to dept avg."
+    plt.title(title)
+    plt.ylabel("Aggregated scores from reviews")
+    plt.show()
 
 def non_time_graphs(args_from_ui):
     if 'dept' in args_from_ui and 'course_num' in args_from_ui and len(args_from_ui) == 2:
