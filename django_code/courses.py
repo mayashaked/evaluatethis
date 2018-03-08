@@ -10,6 +10,7 @@
 import sqlite3
 import os
 import pandas as pd
+import csv
 from statistics import mode
 
 # Use this filename for the database
@@ -37,7 +38,8 @@ def find_courses(args):
     db = sqlite3.connect(DATABASE_FILENAME)
 
     if len(args) == 1:
-        return [pd.read_sql_query(rank_depts().format(args['rank']), db)]
+        return [format_rank(pd.read_sql_query(rank_depts().format(args['rank']), db))]
+
 
     if len(args) == 2:
 
@@ -178,11 +180,13 @@ def rank_depts():
     '''
     Query to rank departments by time or professor quality
     '''
-    rank_dep =  "SELECT dept, AVG(avg_time), AVG(prof_score) \
+    rank_dep =  "SELECT dept AS 'Department Code', \
+                ROUND(AVG(avg_time), 2) AS 'Average Time', \
+                ROUND(AVG(prof_score), 2) AS 'Average Professor Score' \
                 FROM courses JOIN evals \
                 ON courses.course_id = evals.course_id \
                 GROUP BY dept HAVING AVG(avg_time) > .1 \
-                AND COUNT(*) > 10 ORDER BY AVG('{}');"
+                AND COUNT(*) > 10 ORDER BY AVG({}) DESC;"
 
     return rank_dep
 
@@ -226,3 +230,20 @@ def get_profs_primary_dept(args, db):
         return depts[0]
     except:
         return ''
+
+def format_rank(df):
+    '''
+    Change formating to display full dept name
+    '''
+    depts = os.path.join(os.path.dirname(__file__), 'res', 'depts.csv')
+    dept_dict = {}
+    with open(depts, encoding = 'iso-8859-1') as f:
+        reader = csv.reader(f)
+        for l in reader:
+            if l:
+                dept_dict[l[0]] = l[1]
+
+    full_dept = pd.Series([dept_dict[d] for d in df.loc[:,'Department Code']], name = 'Department Name')
+
+    new_df = pd.concat([full_dept, df], axis = 1)
+    return new_df.loc[:,['Department Code', 'Department Name', 'Average Time', 'Average Professor Score']]
