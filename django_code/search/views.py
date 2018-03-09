@@ -62,6 +62,9 @@ class SearchForm_rank(forms.Form):
 
 
 def home(request):
+    for file in os.listdir(os.path.join(os.path.dirname(__file__), '..', 'static', 'images')):
+        if file.endswith(".png"):
+            os.remove(os.path.join(os.path.dirname(__file__), '..', 'static', 'images', file))
     context = {}
     res = None
     if request.method == 'GET':
