@@ -63,16 +63,28 @@
                         </table>
                     </div>
                 {% else %}
-                    <div class="results">
-                        <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
-                        <img src="{% static "/images/graph.png" %}" class = "center"/>
-                        <img src="{% static "/images/profscore.png" %}" class = "center"/>
-                        <img src="{% static "/images/profsent.png" %}" class = "center"/>
-                        <img src="{% static "/images/coursescore.png" %}" class = "center"/>
-                        <img src="{% static "/images/coursesent.png" %}" class = "center"/>
-                        <img src="{% static "/images/courseprofscore.png" %}" class = center/>
-                        <img src="{% static "/images/courseprofsent.png" %}" class = center/>
-                    </div>
+                    {% if graph_type == prof %}
+                        <div class="results">
+                            <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
+                            <img src="{% static "/images/graph.png" %}" class = "center"/>
+                            <img src="{% static "/images/profscore.png" %}" class = "center"/>
+                            <img src="{% static "/images/profsent.png" %}" class = "center"/>
+                        </div>
+                    {% elif graph_type == course %}
+                        <div class="results">
+                            <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
+                            <img src="{% static "/images/graph.png" %}" class = "center"/>
+                            <img src="{% static "/images/coursescore.png" %}" class = "center"/>
+                            <img src="{% static "/images/coursesent.png" %}" class = "center"/>
+                        </div>
+                    {% else %}
+                        <div class="results">
+                            <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
+                            <img src="{% static "/images/graph.png" %}" class = "center"/>
+                            <img src="{% static "/images/courseprofscore.png" %}" class = center/>
+                            <img src="{% static "/images/courseprofsent.png" %}" class = center/>
+                        </div>
+                    {% endif %}
                 {% endif %}
             {% endif %}
         </div>
