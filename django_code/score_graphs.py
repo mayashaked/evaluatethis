@@ -194,6 +194,7 @@ def graph_from_df(continuous_df):
         legend_contents = legend
 
     plt.legend(bars, legend_contents)
+    plt.ylim(ymax = 100)
     return plt
 
 
