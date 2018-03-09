@@ -63,14 +63,14 @@
                         </table>
                     </div>
                 {% else %}
-                    {% if graph_type == prof %}
+                    {% if graph_type == 'prof' %}
                         <div class="results">
                             <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
                             <img src="{% static "/images/graph.png" %}" class = "center"/>
                             <img src="{% static "/images/profscore.png" %}" class = "center"/>
                             <img src="{% static "/images/profsent.png" %}" class = "center"/>
                         </div>
-                    {% elif graph_type == course %}
+                    {% elif graph_type == 'course' %}
                         <div class="results">
                             <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
                             <img src="{% static "/images/graph.png" %}" class = "center"/>

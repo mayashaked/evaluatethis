@@ -63,9 +63,9 @@ class SearchForm_rank(forms.Form):
 
 
 def home(request):
-    # for file in os.listdir(os.path.join(os.path.dirname(__file__), '..', 'static', 'images')):
-    #     if file.endswith(".png"):
-    #         os.remove(os.path.join(os.path.dirname(__file__), '..', 'static', 'images', file))
+    for file in os.listdir(os.path.join(os.path.dirname(__file__), '..', 'static', 'images')):
+        if file.endswith(".png"):
+            os.remove(os.path.join(os.path.dirname(__file__), '..', 'static', 'images', file))
 
     context = {}
     res = None
@@ -137,26 +137,27 @@ def home(request):
                         get_wc(args)
                         graph_it(args)
                         score_graphs.non_time_graphs(args)
-
-                    if 'dept' and 'prof_fn' in args:
+                    print(args)
+                    if 'dept' in args and 'prof_fn' in args:
                         context['graph_type'] = 'course_and_prof'
-                    elif 'dept' in args:
-                        context['graph_type'] = 'prof'
-                    else:
+                    if 'dept' in args and 'course_num' in args:
                         context['graph_type'] = 'course'
+                    if 'prof_fn' in args:
+                        context['graph_type'] = 'prof'
+                    print(context)
                 
                 else:
                     res = None
 
-            except: #Exception as e:
-        #         print('Exception caught')
-        #         bt = traceback.format_exception(*sys.exc_info()[:3])
-        #         context['err'] = """
-        #         An exception was thrown in find_courses:
-        #         <pre>{}
-        # {}</pre>
-        #         """.format(e, '\n'.join(bt))
-                res = None
+            except Exception as e:
+                 print('Exception caught')
+                 bt = traceback.format_exception(*sys.exc_info()[:3])
+                 context['err'] = """
+                 An exception was thrown in find_courses:
+                 <pre>{}
+         {}</pre>
+                 """.format(e, '\n'.join(bt))
+                 res = None
 
     else:
         form_course = SearchForm_course()
