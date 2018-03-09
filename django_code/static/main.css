@@ -139,3 +139,10 @@ span.helptext {
     font-size: 13px;
     color: #fffff;
 }
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}

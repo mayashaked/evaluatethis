@@ -5,7 +5,6 @@ import csv
 import os
 import io
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from django.shortcuts import render
 from django import forms
@@ -152,10 +151,7 @@ def home(request):
     # Handle different responses of res
     if res is None:
         context['result'] = None
-    # elif isinstance(res, str):
-    #     context['result'] = None
-    #     context['err'] = res
-    #     result = None
+
     else: #create outputs (ex. tables and graphs)
         context['columns'] = res.columns
         df_rows = res.values.tolist()

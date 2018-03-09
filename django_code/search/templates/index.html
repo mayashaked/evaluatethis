@@ -42,16 +42,16 @@
         </div>
         {% endif %}
 
-        <div class="frame">
+        <div class="table">
             {% if result != None %}
             <p class="num_results", style="font-size:18px;"> Summary of {{ num_results }} evaluations.</p>
             <div class="results">
-                <img src="{% static "/images/wordcloud.png" %}" />
-                <img src="{% static "/images/graph.png" %}" />
-                <img src="{% static "/images/profscore.png" %}" />
-                <img src="{% static "/images/profsent.png" %}" />
-                <img src="{% static "/images/coursescore.png" %}" />
-                <img src="{% static "/images/coursesent.png" %}" />
+                <img src="{% static "/images/wordcloud.png" %}" class = "center"/>
+                <img src="{% static "/images/graph.png" %}" class = "center"/>
+                <img src="{% static "/images/profscore.png" %}" class = "center"/>
+                <img src="{% static "/images/profsent.png" %}" class = "center"/>
+                <img src="{% static "/images/coursescore.png" %}" class = "center"/>
+                <img src="{% static "/images/coursesent.png" %}" class = "center"/>
                 <table class="courses">
                     <tr>
                         {% for col in columns %}
