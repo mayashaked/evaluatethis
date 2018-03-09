@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django import forms
 
 from courses import find_courses
+from course_name_converter import convert_course_name_to_course_num
 from gen_wordcloud import get_wc
 import score_graphs
 from graphs import graph_it
@@ -62,9 +63,10 @@ class SearchForm_rank(forms.Form):
 
 
 def home(request):
-    for file in os.listdir(os.path.join(os.path.dirname(__file__), '..', 'static', 'images')):
-        if file.endswith(".png"):
-            os.remove(os.path.join(os.path.dirname(__file__), '..', 'static', 'images', file))
+    # for file in os.listdir(os.path.join(os.path.dirname(__file__), '..', 'static', 'images')):
+    #     if file.endswith(".png"):
+    #         os.remove(os.path.join(os.path.dirname(__file__), '..', 'static', 'images', file))
+
     context = {}
     res = None
     if request.method == 'GET':
@@ -75,21 +77,21 @@ def home(request):
         
         # check if forms are valid:
         args = {}
-        num_args = 0
+        num_args = 0 # used in conditional check later on
         if form_course.is_valid():
             # Convert form data to an args dictionary for find_courses
             data = form_course.cleaned_data
             if data['dept']:
                 args['dept'] = data['dept']
                 num_args += 1
-
             if data['course_num'] and data['course_name']: 
             # users only need to submit one, but if they submit both, we pick one field for the sql query
-                args['course_num'] = data['course_name']
+                args['course_num'] = data['course_num']
             elif data['course_num']:
                 args['course_num'] = data['course_num']
             elif data['course_name']:
-                args['course_name'] = data['course_name']
+                course_num = convert_course_name_to_course_num(data['dept'], data['course_name'])
+                args['course_num'] = course_num
 
         if form_prof.is_valid():
             data = form_prof.cleaned_data
@@ -106,7 +108,7 @@ def home(request):
                 args['rank'] = form_rank.cleaned_data['rank']
 
         # check the conditional inputs of the dropdown menus
-        if ('dept' in args) != ('course_num' in args) and ('dept' in args) != ('course_name' in args):
+        if ('dept' in args) != ('course_num' in args):
             context['err'] = "To search by course, \
                 department and course number or course name are required."
         elif ('prof_fn' in args) != ('prof_ln' in args):
@@ -136,17 +138,24 @@ def home(request):
                         graph_it(args)
                         score_graphs.non_time_graphs(args)
 
+                    if 'dept' and 'prof_fn' in args:
+                        context['graph_type'] = 'course_and_prof'
+                    elif 'dept' in args:
+                        context['graph_type'] = 'prof'
+                    else:
+                        context['graph_type'] = 'course'
+                
                 else:
                     res = None
 
-            except Exception as e:
-                print('Exception caught')
-                bt = traceback.format_exception(*sys.exc_info()[:3])
-                context['err'] = """
-                An exception was thrown in find_courses:
-                <pre>{}
-        {}</pre>
-                """.format(e, '\n'.join(bt))
+            except: #Exception as e:
+        #         print('Exception caught')
+        #         bt = traceback.format_exception(*sys.exc_info()[:3])
+        #         context['err'] = """
+        #         An exception was thrown in find_courses:
+        #         <pre>{}
+        # {}</pre>
+        #         """.format(e, '\n'.join(bt))
                 res = None
 
     else:

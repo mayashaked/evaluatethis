@@ -156,6 +156,7 @@ def graph_from_df(continuous_df):
     the line that starts with "bar = "
     The error that will let you know that this is happening is: "bar() missing 1 required positional argument"
     '''
+    colors = ['b', 'g', 'r', 'k', 'm', 'y']
     n = continuous_df.shape[0]
     ind = np.arange(n)
     width = 0.1  
@@ -163,12 +164,21 @@ def graph_from_df(continuous_df):
     plt.figure(figsize = (20, 7))
     bars = []
     for column in continuous_df:
-        bar = plt.bar(left = ind - (offset * width), width=width, height=continuous_df[column])
+        bar = plt.bar(left = ind - (offset * width), width=width, height=continuous_df[column], color = colors[offset])
         offset += 1
         bars.append(bar)
     xnames = list(continuous_df.axes[0])
+    if len(xnames[0]) == 2:
+        names = []
+        for i in range(len(xnames) - 1):
+            prof = xnames[i][0] + ' ' + xnames[i][1]
+            names.append(prof)
+        xnames = names
     plt.xticks(ind, xnames, rotation = 10, fontsize = 10, ha = 'right')
-    plt.legend(bars, continuous_df.axes[1])
+    legend_contents = list([continuous_df.axes[1]])[0]
+    print(legend_contents)
+    legend_translator = {}
+    plt.legend(bars, legend_contents)
     return plt
 
 
@@ -204,7 +214,7 @@ def course_sentiment_graph(args_from_ui):
     continuous_df = df_maker(args_from_ui, "sentiment", "course")
     plt = graph_from_df(continuous_df)
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
-    title = "Sentiment scores for " + course + "compared to dept avg."
+    title = "Sentiment scores for " + course + " with dept avg."
     plt.title(title)
     plt.ylabel("Sentiment scores from reviews")
     plt.savefig('./static/images/coursesent.png')
@@ -217,7 +227,7 @@ def course_score_graph(args_from_ui):
     continuous_df = df_maker(args_from_ui, "score", "course")
     plt = graph_from_df(continuous_df)
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
-    title = "Aggregated scores for " + course + "compared to dept avg."
+    title = "Aggregated scores for " + course + " with dept avg."
     plt.title(title)
     plt.ylabel("Aggregated scores from reviews")
     plt.savefig('./static/images/coursescore.png')
@@ -226,7 +236,11 @@ def course_and_prof_score_graph(args_from_ui):
     scores_df = course_and_prof_score_df_maker(args_from_ui)
     scores_df = columns_to_graph(scores_df, 'score')
     plt = graph_from_df(scores_df)
-    plt.title("lol this is a title")
+    prof = args_from_ui['prof_fn'] + ' ' + args_from_ui['prof_ln']
+    dept = args_from_ui['dept']
+    course = dept + ' ' + args_from_ui['course_num']
+    title = "Scores for " + prof + "'s " + course + ' with scores from dept and past classes'
+    plt.title(title)
     plt.ylabel("Aggregated scores from evaluations")
     plt.savefig('./static/images/courseprofscore.png')
 
@@ -234,7 +248,11 @@ def course_and_prof_sentiment_graph(args_from_ui):
     scores_df = course_and_prof_score_df_maker(args_from_ui)
     scores_df = columns_to_graph(scores_df, 'sentiment')
     plt = graph_from_df(scores_df)
-    plt.title("lol this is a title")
+    prof = args_from_ui['prof_fn'] + ' ' + args_from_ui['prof_ln']
+    dept = args_from_ui['dept']
+    course = dept + ' ' + args_from_ui['course_num']
+    title = "Sentiment scores for " + prof + "'s " + course + ' with scores from dept and past classes'
+    plt.title(title)
     plt.ylabel("Aggregated scores from evaluations")
     plt.savefig('./static/images/courseprofsent.png')
 
@@ -251,5 +269,4 @@ def non_time_graphs(args_from_ui):
     else:
         course_and_prof_score_graph(args_from_ui)
         course_and_prof_sentiment_graph(args_from_ui)
-
 
