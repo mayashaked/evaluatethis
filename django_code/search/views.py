@@ -133,6 +133,13 @@ def home(request):
                         graph_it(args)
                         score_graphs.non_time_graphs(args)
 
+                    if 'dept' and 'prof_fn' in args:
+                        context['graph_type'] = 'course_and_prof'
+                    elif 'dept' in args:
+                        context['graph_type'] = 'prof'
+                    else:
+                        context['graph_type'] = 'course'
+                
                 else:
                     res = None
 
