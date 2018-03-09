@@ -175,7 +175,10 @@ def graph_from_df(continuous_df):
             names.append(prof)
         xnames = names
     plt.xticks(ind, xnames, rotation = 10, fontsize = 10, ha = 'right')
-    plt.legend(bars, continuous_df.axes[1])
+    legend_contents = list([continuous_df.axes[1]])[0]
+    print(legend_contents)
+    legend_translator = {}
+    plt.legend(bars, legend_contents)
     return plt
 
 
