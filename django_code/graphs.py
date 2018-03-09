@@ -2,7 +2,6 @@ import courses
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import datetime
 '''
 get the necessary data given args from ui
 this assumes that you can search by prof, dept, or course number
