@@ -56,7 +56,7 @@ def time_graph(lows, avgs, highs, title):
     n = lows.shape[0]
     ind = np.arange(n)
     width = 0.35
-    plt.figure(figsize = (10, 7))
+    plt.figure(figsize = (20, 7))
     p1 = plt.bar(ind, lows, width, color='#d62728')
     p2 = plt.bar(ind, avgs, width,
              bottom=lows, color = '#f442cb')
@@ -129,8 +129,7 @@ def course_prof_graph(args_from_ui):
     course = dept + " " + args_from_ui['course_num']
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     course_and_prof = prof + " and " + course
-    title = "lol this is a title"
-
+    title = "Time demands for " + course + ' taught by ' + prof + ' with related time demands'
     lows = pd.Series({course_and_prof:course_and_prof_df.low_time.mean()})
     avgs = pd.Series({course_and_prof:course_and_prof_df.avg_time.mean()})
     highs = pd.Series({course_and_prof:course_and_prof_df.high_time.mean()})
