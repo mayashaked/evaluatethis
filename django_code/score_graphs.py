@@ -89,6 +89,65 @@ def get_small_df(dataframe, prof_or_course):
 
     return dataframe, current_year - timespan
 
+
+def course_and_prof_score_df_maker(args_from_ui):
+    '''
+    If the user searches by course and professor, this code will produce a graph that compares the scores 
+    for this professor averaged over every time they taught the course, the time demands made by
+    other professors who  have taught this course, departmental average time demands, and this professor's average
+    time demands.
+    '''
+    dept = args_from_ui['dept']
+    prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
+    course = dept + " " + args_from_ui['course_num']
+    course_and_prof =  course + " taught by " + prof
+    course_and_prof_df, dept_df, course_df, prof_df = courses.find_courses(args_from_ui)
+    course_and_prof_df = course_and_prof_df.mean().to_frame()
+    dept_df = dept_df.mean()
+    course_df = course_df.mean()
+    prof_df = prof_df.mean()
+    scores_df = pd.concat([course_and_prof_df, dept_df, course_df, prof_df], axis = 1)
+    scores_df.columns = [course_and_prof, dept, course, prof]
+    scores_df = scores_df.dropna(how = "all", axis = 0)
+    return scores_df.transpose()
+
+
+def columns_to_graph(scores_df, sentiment_or_score):
+    columns_not_to_graph = ['num_recommend', 
+                            'num_dont_recommend', 
+                            'good_inst', 
+                            'bad_inst']
+    if sentiment_or_score == "sentiment":
+        columns_not_to_graph += ['course_id', 
+                                'low_time', 
+                                'avg_time', 
+                                'high_time', 
+                                'fn', 
+                                'ln', 
+                                'year', 
+                                'num_responses', 
+                                'prof_score', 
+                                'ass_score', 
+                                'test_score',
+                                'over_score',
+                                'read_score']
+    if sentiment_or_score == "score":
+        columns_not_to_graph += ['course_id', 
+                                'low_time', 
+                                'avg_time', 
+                                'high_time', 
+                                'fn', 
+                                'ln', 
+                                'year', 
+                                'num_responses', 
+                                'inst_sentiment', 
+                                'course_sentiment']
+    columns = list(scores_df.columns)
+    graph_columns = list(set(columns).difference(columns_not_to_graph))
+    scores_df = scores_df[graph_columns]
+    return scores_df
+    
+
 def graph_from_df(continuous_df):
     '''
     Given a dataframe of continuous non-time data, creates a grouped bar graph displaying scores 
@@ -164,10 +223,20 @@ def course_score_graph(args_from_ui):
     plt.savefig('./static/images/coursescore.png')
 
 def course_and_prof_score_graph(args_from_ui):
-    pass
+    scores_df = course_and_prof_score_df_maker(args_from_ui)
+    scores_df = columns_to_graph(scores_df, 'score')
+    plt = graph_from_df(scores_df)
+    plt.title("lol this is a title")
+    plt.ylabel("Aggregated scores from evaluations")
+    plt.show()
 
 def course_and_prof_sentiment_graph(args_from_ui):
-    pass
+    scores_df = course_and_prof_score_df_maker(args_from_ui)
+    scores_df = columns_to_graph(scores_df, 'sentiment')
+    plt = graph_from_df(scores_df)
+    plt.title("lol this is a title")
+    plt.ylabel("Aggregated scores from evaluations")
+    plt.show()
 
 def non_time_graphs(args_from_ui):
     if len(args_from_ui) == 2:
@@ -180,23 +249,8 @@ def non_time_graphs(args_from_ui):
             prof_sentiment_graph(args_from_ui)
 
     else:
+        print('lol')
         course_and_prof_score_graph(args_from_ui)
         course_and_prof_sentiment_graph(args_from_ui)
 
 
-
-def course_and_prof_score_graph(args_from_ui):
-    '''
-    If the user searches by course and professor, this code will produce a graph that compares the scores 
-    for this professor averaged over every time they taught the course, the time demands made by
-    other professors who  have taught this course, departmental average time demands, and this professor's average
-    time demands.
-    '''
-    course_and_prof_df, dept_df, course_df, prof_df = courses.find_courses(args_from_ui)
-    columns_not_to_graph = ['num_recommend', 
-                            'num_dont_recommend', 
-                            'good_inst', 
-                            'bad_inst']
-    course_and_prof_df.dropna(axis = (1), how = "all", inplace = True)
-    columns = list(course_and_prof_df.columns)
-    
