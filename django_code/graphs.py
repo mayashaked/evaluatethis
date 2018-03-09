@@ -56,7 +56,7 @@ def time_graph(lows, avgs, highs, title):
     n = lows.shape[0]
     ind = np.arange(n)
     width = 0.35
-    plt.figure(figsize = (10, 7))
+    plt.figure(figsize = (20, 7))
     p1 = plt.bar(ind, lows, width, color='#d62728')
     p2 = plt.bar(ind, avgs, width,
              bottom=lows, color = '#f442cb')
