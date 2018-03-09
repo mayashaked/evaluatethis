@@ -176,15 +176,22 @@ def graph_from_df(continuous_df):
         xnames = names
     plt.xticks(ind, xnames, rotation = 10, fontsize = 10, ha = 'right')
     legend_contents = list([continuous_df.axes[1]])[0]
-    if prof_score in legend_contents:
-    	legend = []
-    	legend_translator = {'prof_score':'Professor Score', 
-    						'ass_score':'Assessment Score', 
-    						'test_score':"Test Score", 
-    						'over_score':'Overall Score'}
-	    for label in legend_contents:
-	    	legend.append(legend_translator[label])
-	    legend_contents = legend
+    if "prof_score" in legend_contents:
+        legend = []
+        legend_translator = {'prof_score':'Professor Score', 
+                            'ass_score':'Assessment Score', 
+                            'test_score':"Test Score", 
+                            'over_score':'Overall Score'}
+        for label in legend_contents:
+            legend.append(legend_translator[label])
+        legend_contents = legend
+    if 'inst_sentiment' in legend_contents:
+        legend = []
+        legend_translator = {'inst_sentiment':'Professor sentiment score', 
+                            'course_sentiment': "Course sentiment score"}
+        for label in legend_contents:
+            legend.append(legend_translator[label])
+        legend_contents = legend
 
     plt.legend(bars, legend_contents)
     return plt
