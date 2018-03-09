@@ -54,8 +54,8 @@ class SearchForm_course(forms.Form):
 class SearchForm_prof(forms.Form):
     prof_fn = forms.ChoiceField(label='Professor\'s First Name', choices=PROFS_FN, required=False)
     prof_ln = forms.ChoiceField(label='Professor\'s Last Name', choices=PROFS_LN, required=False)
-    show_args = forms.BooleanField(label='Show args_to_ui',
-                                   required=False) # delete this in end
+    # show_args = forms.BooleanField(label='Show args_to_ui',
+    #                                required=False) # delete this in end
 
 
 class SearchForm_rank(forms.Form):
@@ -100,8 +100,8 @@ def home(request):
                 num_args += 1
             if data['prof_ln']:
                 args['prof_ln'] = data['prof_ln']
-            if data['show_args']:
-                context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
+            # if data['show_args']:
+            #     context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
         
         if form_rank.is_valid():
             if form_rank.cleaned_data['rank']:
@@ -137,14 +137,14 @@ def home(request):
                         get_wc(args)
                         graph_it(args)
                         score_graphs.non_time_graphs(args)
-                    print(args)
+                    # print(args)
                     if 'dept' in args and 'prof_fn' in args:
                         context['graph_type'] = 'course_and_prof'
-                    if 'dept' in args and 'course_num' in args:
+                    elif 'dept' in args and 'course_num' in args:
                         context['graph_type'] = 'course'
-                    if 'prof_fn' in args:
+                    elif 'prof_fn' in args:
                         context['graph_type'] = 'prof'
-                    print(context)
+                    # print(context)
                 
                 else:
                     res = None

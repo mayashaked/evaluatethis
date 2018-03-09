@@ -14,7 +14,10 @@ import sqlite3
 import os
 import pandas as pd
 from wordcloud import WordCloud
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import graphs
 from statistics import mode
 
 # Use this filename for the database

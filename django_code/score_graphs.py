@@ -1,7 +1,10 @@
 import courses
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
 import graphs
 
 def df_maker(args_from_ui, sentiment_or_score, graph_type):

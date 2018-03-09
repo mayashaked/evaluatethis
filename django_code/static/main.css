@@ -70,6 +70,7 @@ label {
 p.num_results {
     margin-left: 5px;
     font-size: 12px;
+    background-color: #ffffff
 }
 
 table.form_course {
