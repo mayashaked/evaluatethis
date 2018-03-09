@@ -86,9 +86,9 @@ def get_wc(args_from_ui):
 
     clean = ' '.join([x for x in evals if x != None])
 
-    wc = WordCloud(width = 600, height = 300).generate(clean)
+    wc = WordCloud(width = 2000, height = 700).generate(clean)
 
-    plt.figure(figsize = (10, 5))
+    plt.figure(figsize = (20, 7))
     plt.imshow(wc)
     plt.axis("off")
     plt.savefig('./static/images/wordcloud.png')
