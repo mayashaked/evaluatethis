@@ -228,7 +228,7 @@ def course_and_prof_score_graph(args_from_ui):
     plt = graph_from_df(scores_df)
     plt.title("lol this is a title")
     plt.ylabel("Aggregated scores from evaluations")
-    plt.show()
+    plt.savefig('./static/images/courseprofscore.png')
 
 def course_and_prof_sentiment_graph(args_from_ui):
     scores_df = course_and_prof_score_df_maker(args_from_ui)
@@ -236,7 +236,7 @@ def course_and_prof_sentiment_graph(args_from_ui):
     plt = graph_from_df(scores_df)
     plt.title("lol this is a title")
     plt.ylabel("Aggregated scores from evaluations")
-    plt.show()
+    plt.savefig('./static/images/courseprofsent.png')
 
 def non_time_graphs(args_from_ui):
     if len(args_from_ui) == 2:
@@ -249,7 +249,6 @@ def non_time_graphs(args_from_ui):
             prof_sentiment_graph(args_from_ui)
 
     else:
-        print('lol')
         course_and_prof_score_graph(args_from_ui)
         course_and_prof_sentiment_graph(args_from_ui)
 
