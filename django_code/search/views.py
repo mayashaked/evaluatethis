@@ -107,31 +107,35 @@ def home(request):
         if ('dept' in args) != ('course_num' in args) and ('dept' in args) != ('course_name' in args):
             context['err'] = "To search by course, \
                 department and course number or course name are required."
-            res = None
         elif ('prof_fn' in args) != ('prof_ln' in args):
             context['err'] = "To search by professor, \
                 both first name and last name are required."
-            res = None
         elif ('rank' in args) and num_args > 0:
             context['err'] = "You cannot perform a search and \
                 view department rankings in the same request."
-            res = None
         else: # a valid set of search categories
             try:
-                res = find_courses(args)[0] #result of courses.py
-                context['columns'] = res.columns
-                df_rows = res.values.tolist()
-                result = []
-                for row in df_rows:
-                    result.append(tuple(row))
-                context['result'] = result
-                context['num_results'] = len(res)
-                if len(res) != 0 and 'rank' not in args:
-                    # there are courses to use to generate the images
-                    # result of courses.py
-                    get_wc(args)
-                    graph_it(args)
-                    score_graphs.non_time_graphs(args)
+                res = find_courses(args)[0]
+                if len(res) > 0: # evals were found
+                    context['columns'] = res.columns
+                    df_rows = res.values.tolist()
+                    result = []
+                    for row in df_rows:
+                        result.append(tuple(row))
+                    context['result'] = result
+                    context['num_results'] = len(res)
+                    
+                    if 'rank' in args:
+                        context['rank'] = True
+                    # we want to generate graphs and images
+                    else:
+                        context['rank'] = False
+                        get_wc(args)
+                        graph_it(args)
+                        score_graphs.non_time_graphs(args)
+
+                else:
+                    res = None
 
             except Exception as e:
                 print('Exception caught')
@@ -141,7 +145,6 @@ def home(request):
                 <pre>{}
         {}</pre>
                 """.format(e, '\n'.join(bt))
-
                 res = None
 
     else:
@@ -152,10 +155,6 @@ def home(request):
     # Handle different responses of res
     if res is None:
         context['result'] = None
-    # elif isinstance(res, str):
-    #     context['result'] = None
-    #     context['err'] = res
-    #     result = None
     else: #create outputs (ex. tables and graphs)
         context['columns'] = res.columns
         df_rows = res.values.tolist()
