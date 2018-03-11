@@ -57,7 +57,7 @@ def time_lists(small_df, dept_df, dept):
 def time_graph(lows, avgs, highs, title):
     n = lows.shape[0]
     ind = np.arange(n)
-    width = 0.35
+    width = 0.2
     plt.figure(figsize = (20, 7))
     p1 = plt.bar(ind, lows, width, color='#d62728')
     p2 = plt.bar(ind, avgs, width,
@@ -67,7 +67,7 @@ def time_graph(lows, avgs, highs, title):
     plt.ylabel('Amount of time spent')
     plt.title(title)
     xnames = list(lows.axes[0])
-    plt.xticks(ind, xnames, rotation = 20, fontsize = 6, ha = 'right')
+    plt.xticks(ind, xnames, rotation = 10, fontsize = 6, ha = 'right')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
     plt.tight_layout()
     plt.savefig('./static/images/graph.png')
