@@ -12,6 +12,10 @@ if you search by dept, you don't want info about a specific course or prof
 '''
 
 def graph_it(args_from_ui):
+    '''
+    Given arguments from the user, calls the appropriate graphing function to create a time
+    comparison graph. 
+    '''
     if len(args_from_ui) == 2:
         if "prof_fn" in args_from_ui and "prof_ln" in args_from_ui:
             prof_graph(args_from_ui)
@@ -22,6 +26,9 @@ def graph_it(args_from_ui):
 
 
 def get_small_df(dataframe, prof_or_course):
+    '''
+    Drops successive years until the number of bars in the graph will be no more than 10. 
+    '''
     current_year = 2018
     timespan = 5
     if prof_or_course == "prof":
@@ -31,14 +38,18 @@ def get_small_df(dataframe, prof_or_course):
         dataframe = dataframe.groupby(['course']).mean()
 
     if prof_or_course == "course":
-        while dataframe.groupby(['fn', 'ln']).mean().shape[0] > 10:
+        dataframe['prof_name'] = dataframe['fn'].astype('str') + ' ' + dataframe['ln']
+        while dataframe.prof_name.unique().shape[0] > 10:
             timespan -= 1
             dataframe = dataframe[dataframe.year >= current_year - timespan]
-        dataframe = dataframe.groupby(['fn', 'ln']).mean()
+        dataframe = dataframe.groupby(['prof_name']).mean()
 
     return dataframe, current_year - timespan
 
 def time_lists(small_df, dept_df, dept):
+    '''
+    Creates lists of low, average, and high time demands for courses and departments. 
+    '''
 
     lows = small_df.low_time
     dept_low = dept_df.low_time.mean()
@@ -55,6 +66,11 @@ def time_lists(small_df, dept_df, dept):
     return lows, avgs, highs
 
 def time_graph(lows, avgs, highs, title):
+    '''
+    Given lists of low, average, and high amounts of time spent on classes, 
+    creates graphs that compare the times to each other and to the department
+    average. 
+    '''
     n = lows.shape[0]
     ind = np.arange(n)
     width = 0.2
@@ -67,9 +83,10 @@ def time_graph(lows, avgs, highs, title):
     plt.ylabel('Amount of time spent')
     plt.title(title)
     xnames = list(lows.axes[0])
-    plt.xticks(ind, xnames, rotation = 10, fontsize = 6, ha = 'right')
+    plt.xticks(ind, xnames, rotation = 10, fontsize = 6, ha = 'left')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
     plt.tight_layout()
+    return plt
     plt.savefig('./static/images/graph.png')
 
 
@@ -82,8 +99,11 @@ def prof_graph(args_from_ui):
     prof_df, dept_df, dept = courses.find_courses(args_from_ui)
     title = "Comparison of the time demands made by " + args_from_ui['prof_fn'] + ' ' + args_from_ui['prof_ln'] + " to the departmental average"
     small_df, year = get_small_df(prof_df, "prof")
+    if 'high_time' in small_df:
+        small_df = small_df.sort_values(by = 'high_time', axis = 0, ascending = False)
     lows, avgs, highs = time_lists(small_df, dept_df, dept)
-    time_graph(lows, avgs, highs, title)
+    graph = time_graph(lows, avgs, highs, title)
+    plt.savefig('./static/images/graph.png')
 
 
 def course_graph(args_from_ui):
@@ -93,29 +113,14 @@ def course_graph(args_from_ui):
     time demands. If the course is crosslisted, this may also include the average time demands of the other department(s).
     '''
     course_df, dept_df = courses.find_courses(args_from_ui)
+    
     title = "Time demands made by instructors of " + args_from_ui['dept'] + " " + args_from_ui['course_num'] + " w/ departmental average"
     dept = args_from_ui['dept']
     small_df, year = get_small_df(course_df, "course")
+    if 'high_time' in small_df:
+        small_df = small_df.sort_values(by = 'high_time', axis = 0, ascending = False)
     lows, avgs, highs = time_lists(small_df, dept_df, dept)
-    n = lows.shape[0]
-    ind = np.arange(n)
-    width = 0.35
-    plt.figure(figsize = (20, 7))
-    p1 = plt.bar(ind, lows, width, color='#d62728')
-    p2 = plt.bar(ind, avgs, width,
-             bottom=lows, color = '#f442cb')
-    p3 = plt.bar(ind, avgs, width,
-             bottom=avgs, color = '#63cbe8')
-    plt.ylabel('Amount of time spent')
-    plt.title(title)
-    names = list(lows.axes[0])
-    xnames = []
-    for name in names:
-        xnames.append(name[0] + " " + name[1])
-    xnames.append(dept)
-    plt.xticks(ind, xnames, rotation = 20, fontsize = 6, ha = 'right')
-    plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
-    plt.tight_layout()
+    graph = time_graph(lows, avgs, highs, title)
     plt.savefig('./static/images/graph.png')
 
 
@@ -149,4 +154,6 @@ def course_prof_graph(args_from_ui):
     avgs = avgs.append(pd.Series({prof:prof_df.avg_time.mean()}))
     highs = highs.append(pd.Series({prof:prof_df.high_time.mean()}))
 
-    time_graph(lows, avgs, highs, title)
+    graph = time_graph(lows, avgs, highs, title)
+    plt.savefig('./static/images/graph.png')
+
