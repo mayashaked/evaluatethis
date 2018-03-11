@@ -100,38 +100,16 @@ def course_and_prof_score_df_maker(args_from_ui):
 
 
 def columns_to_graph(scores_df, sentiment_or_score):
-    columns_not_to_graph = ['num_recommend', 
-                            'num_dont_recommend', 
-                            'good_inst', 
-                            'bad_inst']
     if sentiment_or_score == "sentiment":
-        columns_not_to_graph += ['course_id', 
-                                'low_time', 
-                                'avg_time', 
-                                'high_time', 
-                                'fn', 
-                                'ln', 
-                                'year', 
-                                'num_responses', 
-                                'prof_score', 
-                                'ass_score', 
-                                'test_score',
-                                'over_score',
-                                'read_score']
+        columns_to_graph = ['inst_sentiment', 'course_sentiment']
+
     if sentiment_or_score == "score":
-        columns_not_to_graph += ['course_id', 
-                                'low_time', 
-                                'avg_time', 
-                                'high_time', 
-                                'fn', 
-                                'ln', 
-                                'year', 
-                                'num_responses', 
-                                'inst_sentiment', 
-                                'course_sentiment']
-    columns = list(scores_df.columns)
-    graph_columns = list(set(columns).difference(columns_not_to_graph))
-    scores_df = scores_df[graph_columns]
+        columns_to_graph = ['prof_score', 'ass_score', 'over_score', 'test_score']
+
+    current_columns = list(scores_df.columns)
+    columns_to_graph = list(set(current_columns).intersection(columns_to_graph))
+    scores_df = scores_df[columns_to_graph]
+    
     return scores_df
     
 
