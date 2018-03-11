@@ -188,7 +188,7 @@ def prof_score_graph(args_from_ui):
             continuous_df = continuous_df.sort_values(by = 'prof_score', axis = 0, ascending = False)
     plt = graph_from_df(continuous_df)
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
-    title = prof + "'s aggregated scores compared to dept avg."
+    title = prof + "'s aggregated scores with dept avg."
     plt.title(title)
     plt.ylabel("Aggregated scores from reviews")
     plt.savefig('./static/images/profscore.png')
@@ -202,7 +202,7 @@ def prof_sentiment_graph(args_from_ui):
             continuous_df = continuous_df.sort_values(by = 'inst_sentiment', axis = 0, ascending = False)
     plt = graph_from_df(continuous_df)
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
-    title = prof + "'s sentiment scores compared to dept avg."
+    title = prof + "'s sentiment scores with dept avg."
     plt.title(title)
     plt.ylabel("Sentiment scores from reviews")
     plt.savefig('./static/images/profsent.png')
