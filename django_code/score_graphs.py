@@ -18,49 +18,32 @@ def df_maker(args_from_ui, sentiment_or_score, graph_type):
     if graph_type == "prof":
         prof_df, dept_df, dept = courses.find_courses(args_from_ui)
         small_df, year = get_small_df(prof_df, graph_type)
+
+
     if graph_type == "course":
         course_df, dept_df = courses.find_courses(args_from_ui)
+        course_df['prof_name'] = course_df['fn'].astype('str') + ' ' + course_df['ln']
         dept = args_from_ui['dept']
         small_df, year = get_small_df(course_df, graph_type)
+    
 
-    columns_not_to_graph = ['num_recommend', 
-                            'num_dont_recommend', 
-                            'good_inst', 
-                            'bad_inst']
+    if sentiment_or_score == "sentiment":
+        columns_to_graph = ['inst_sentiment', 'course_sentiment']
+
+    if sentiment_or_score == "score":
+        columns_to_graph = ['prof_score', 'ass_score', 'over_score', 'test_score']
+
+    current_columns = list(small_df.columns)
+    columns_to_graph = list(set(current_columns).intersection(columns_to_graph))
+    small_df = small_df[columns_to_graph]
 
     small_df.dropna(axis = (1), how = "all", inplace = True)
-    if sentiment_or_score == "sentiment":
-        columns_not_to_graph += ['course_id', 
-                                'low_time', 
-                                'avg_time', 
-                                'high_time', 
-                                'fn', 
-                                'ln', 
-                                'year', 
-                                'num_responses', 
-                                'prof_score', 
-                                'ass_score', 
-                                'test_score',
-                                'over_score',
-                                'read_score']
-    if sentiment_or_score == "score":
-        columns_not_to_graph += ['course_id', 
-                                'low_time', 
-                                'avg_time', 
-                                'high_time', 
-                                'fn', 
-                                'ln', 
-                                'year', 
-                                'num_responses', 
-                                'inst_sentiment', 
-                                'course_sentiment']
-    columns = list(small_df.columns)
-    graph_columns = list(set(columns).difference(columns_not_to_graph))
-    small_df = small_df[graph_columns]
     if graph_type == "prof":
         continuous_df = small_df.groupby(['course']).mean()
     if graph_type == "course":
-        continuous_df = small_df.groupby(['fn', 'ln']).mean()
+        continuous_df = small_df.groupby(['prof_name']).mean()
+
+
     compare_to_dept_columns = list(continuous_df.columns)
     dept_df = dept_df[compare_to_dept_columns].mean()
     dept_df.rename(index = dept, inplace = True)
@@ -84,10 +67,11 @@ def get_small_df(dataframe, prof_or_course):
         dataframe = dataframe.groupby(['course']).mean()
 
     if prof_or_course == "course":
-        while dataframe.groupby(['fn', 'ln']).mean().shape[0] > 10:
+        while dataframe.prof_name.unique().shape[0] > 10:
             timespan -= 1
             dataframe = dataframe[dataframe.year >= current_year - timespan]
-        dataframe = dataframe.groupby(['fn', 'ln']).mean()
+        dataframe = dataframe.groupby(['prof_name']).mean()
+
 
 
     return dataframe, current_year - timespan
@@ -171,18 +155,12 @@ def graph_from_df(continuous_df):
         offset += 1
         bars.append(bar)
     xnames = list(continuous_df.axes[0])
-    if len(xnames[0]) == 2:
-        names = []
-        for i in range(len(xnames) - 1):
-            prof = xnames[i][0] + ' ' + xnames[i][1]
-            names.append(prof)
-        xnames = names
     plt.xticks(ind, xnames, rotation = 10, fontsize = 10, ha = 'right')
     legend_contents = list([continuous_df.axes[1]])[0]
     if "prof_score" in legend_contents:
         legend = []
         legend_translator = {'prof_score':'Professor Score', 
-                            'ass_score':'Assessment Score', 
+                            'ass_score':'Assignment Score', 
                             'test_score':"Test Score", 
                             'over_score':'Overall Score'}
         for label in legend_contents:
@@ -206,6 +184,8 @@ def prof_score_graph(args_from_ui):
     Creates a graph for a professor's scores compared to the department average. 
     '''
     continuous_df = df_maker(args_from_ui, "score", "prof")
+    if 'prof_score' in continuous_df:
+            continuous_df = continuous_df.sort_values(by = 'prof_score', axis = 0, ascending = False)
     plt = graph_from_df(continuous_df)
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     title = prof + "'s aggregated scores compared to dept avg."
@@ -218,6 +198,8 @@ def prof_sentiment_graph(args_from_ui):
     Creates a graph for a professor's sentiment scores compared to the department average. 
     '''
     continuous_df = df_maker(args_from_ui, "sentiment", "prof")
+    if 'inst_sentiment' in continuous_df:
+            continuous_df = continuous_df.sort_values(by = 'inst_sentiment', axis = 0, ascending = False)
     plt = graph_from_df(continuous_df)
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     title = prof + "'s sentiment scores compared to dept avg."
@@ -231,6 +213,8 @@ def course_sentiment_graph(args_from_ui):
     class compared to the department average. 
     '''
     continuous_df = df_maker(args_from_ui, "sentiment", "course")
+    if 'inst_sentiment' in continuous_df:
+            continuous_df = continuous_df.sort_values(by = 'inst_sentiment', axis = 0, ascending = False) 
     plt = graph_from_df(continuous_df)
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
     title = "Sentiment scores for " + course + " with dept avg."
@@ -244,6 +228,8 @@ def course_score_graph(args_from_ui):
     the department average. 
     '''
     continuous_df = df_maker(args_from_ui, "score", "course")
+    if 'prof_score' in continuous_df:
+            continuous_df = continuous_df.sort_values(by = 'prof_score', axis = 0, ascending = False)
     plt = graph_from_df(continuous_df)
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
     title = "Aggregated scores for " + course + " with dept avg."
