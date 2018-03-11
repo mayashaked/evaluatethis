@@ -14,6 +14,7 @@ from course_name_converter import convert_course_name_to_course_num
 from gen_wordcloud import get_wc
 import score_graphs
 from graphs import graph_it
+import display_dyadic_partioning
 
 NOPREF_STR = 'No preference'
 RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
@@ -137,6 +138,7 @@ def home(request):
                         get_wc(args)
                         graph_it(args)
                         score_graphs.non_time_graphs(args)
+                        would_like, would_recommend = display_dyadic_partitioning(args)
                     # print(args)
                     if 'dept' in args and 'prof_fn' in args:
                         context['graph_type'] = 'course_and_prof'
