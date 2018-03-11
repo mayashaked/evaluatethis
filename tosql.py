@@ -78,7 +78,7 @@ def gen_courses(j, db):
 
     courses = j[['course', 'course_number', 'dept', 'section', 'term', 'year']]
 
-    sqldbcourses = courses.to_sql('courses', con = db, flavor = 'sqlite', index = True, index_label = 'course_id')
+    courses.to_sql('courses', con = db, flavor = 'sqlite', index = True, index_label = 'course_id')
 
     pass
 
@@ -106,7 +106,7 @@ def gen_profs(j, db):
 
     profs = pd.DataFrame(profs)
     profs = profs.rename(columns = {0 : 'course_id', 1: "ln", 2 : "fn"})
-    sqldbprofs = profs.to_sql('profs', con = db, flavor = 'sqlite', index = False)
+    profs.to_sql('profs', con = db, flavor = 'sqlite', index = False)
 
     pass
 
@@ -133,7 +133,7 @@ def gen_crosslists(j, db):
                 
     crosslists = pd.DataFrame(crosslists)
     crosslists = crosslists.rename(columns = {0 : 'course_id', 1 : 'crosslist'})
-    sqldbcrosslists = crosslists.to_sql('crosslists', con = db, flavor = 'sqlite', index = False)
+    crosslists.to_sql('crosslists', con = db, flavor = 'sqlite', index = False)
 
     pass
 
@@ -183,14 +183,19 @@ def gen_evals(j, db):
         10 : 'num_dont_recommend', 11 : 'inst_sentiment', 12 : 'course_sentiment',
         13 : 'read_score', 14 : 'good_inst', 15 : 'bad_inst'})
 
-    sqldbevals = evals.to_sql('evals', con = db, flavor = 'sqlite', index = False)
+    evals.to_sql('evals', con = db, flavor = 'sqlite', index = False)
 
     pass
 
 def gen_text(j, db):
     '''
     Takes the evaluations pandas dataframe and a database object 
-    and creates our 'text' table
+    and first creates our tentative 'text' table. Then, we join this
+    tentative 'text' table with our 'profs' table, joining on course_id,
+    in order to strip professors' first and last names from their evaluation 
+    responses, so as to not have these redundant names in our WordCloud. 
+    Finally, we use this fully cleaned dataframe to create our final 'text'
+    table
 
       - j is a pandas DataFrame
       - db is a sqlite3 database object
@@ -198,6 +203,7 @@ def gen_text(j, db):
     Does not return anything, but rather creates the 'text' table 
     in our SQL database
     '''
+    fulldf = j #we use this later when creating the final version of the table
 
     j = j[['course_responses', 'instructor_responses']]
 
@@ -243,7 +249,31 @@ def gen_text(j, db):
 
     alltext = alltext.rename(columns = {0 : 'course_id', 1 : 'course_resp', 2 : 'inst_resp'})
 
-    sqldbtext = alltext.to_sql('text', con = db, flavor = 'sqlite', index = False)
+    alltext.to_sql('texttentative', con = db, flavor = 'sqlite', index = False)
+
+    #now we begin the process of stripping professor names from the evaluation responses
+
+    finalalltext = pd.read_sql_query('SELECT profs.course_id, profs.fn, profs.ln, \
+        texttentative.course_resp, texttentative.inst_resp FROM profs JOIN texttentative \
+        ON profs.course_id = texttentative.course_id;', db
+
+    for ind, row in toclean.iterrows():
+        if row['fn'] != None:
+            row['fn'] = row['fn'].lower()
+            if row['course_resp'] != None:
+                row['course_resp'] = row['course_resp'].replace(row['fn'], '')
+            if row['inst_resp'] != None:
+                row['inst_resp'] = row['inst_resp'].replace(row['fn'], '')
+        if row['ln'] != None:
+            row['ln'] = row['ln'].lower()
+            if row['course_resp'] != None:
+                row['course_resp'] = row['course_resp'].replace(row['ln'], '')
+            if row['inst_resp'] != None:
+                row['inst_resp'] = row['inst_resp'].replace(row['ln'], '')
+
+     finalalltext.tosql('text', con = db, flavor = 'sqlite', index = False)
+
+     pd.read_sql_query('DROP TABLE texttentative;', db)
 
     pass
 
