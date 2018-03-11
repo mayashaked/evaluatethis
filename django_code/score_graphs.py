@@ -257,13 +257,16 @@ def non_time_graphs(args_from_ui):
     Given arguments from the user, calls the appropriate graphing function to display the information requested. 
     '''
     if len(args_from_ui) == 2:
-        if 'dept' in args_from_ui and 'course_num' in args_from_ui:
+
+        if 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
+            prof_score_graph(args_from_ui)
+            prof_sentiment_graph(args_from_ui)
+
+        elif 'dept' in args_from_ui:
             course_score_graph(args_from_ui)
             course_sentiment_graph(args_from_ui)
 
-        elif 'prof_fn' in args_from_ui and 'prof_ln' in args_from_ui:
-            prof_score_graph(args_from_ui)
-            prof_sentiment_graph(args_from_ui)
+        
 
     else:
         course_and_prof_score_graph(args_from_ui)

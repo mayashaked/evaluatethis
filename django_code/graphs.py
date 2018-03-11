@@ -19,7 +19,7 @@ def graph_it(args_from_ui):
     if len(args_from_ui) == 2:
         if "prof_fn" in args_from_ui and "prof_ln" in args_from_ui:
             prof_graph(args_from_ui)
-        elif "dept" in args_from_ui and "course_num" in args_from_ui:
+        elif "dept" in args_from_ui:
             course_graph(args_from_ui)
     else:
         course_prof_graph(args_from_ui)
