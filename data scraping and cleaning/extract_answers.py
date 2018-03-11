@@ -3,7 +3,7 @@
 # Purpose:     This program iterates through the evaluation text and extracts
 #              responses to many types of questions, as well as general
 #              data related to that evaluation. Essentially we turn each
-#              huge block of text into a dictionary.
+#              huge block of text into a dictionary and write to a json.
 #
 # Author:      Alex Maiorella
 #
@@ -88,7 +88,9 @@ def main(evals_file, all_question_file, course_q, instructor_q, \
 def iterate(evals, question_list, course_qs, instructor_qs, agree_disagree_qs):
     '''
     Parse all of the evaluation text to locate, classify, and extract the
-    data we want.
+    data we want. Note that this was deliberately structured as a single
+    function with extensive in-line comments to maximize clarity and because
+    it represents a single proccess.
 
     Inputs:
         evaluation list, list of questions, sub-lists of various types of q's
@@ -324,7 +326,7 @@ if __name__ == '__main__':
             main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], \
             sys.argv[5], sys.argv[6])
         except:
-            print("Args are full paths to 'unique_evals.csv', \
+            print("Args are: full paths to 'unique_evals.csv', \
             'manually_cleaned_eval_questions.csv', \
             'course_quality_questions.csv', \
             'instructor_quality_questions.csv', \
