@@ -100,6 +100,9 @@ def course_and_prof_score_df_maker(args_from_ui):
 
 
 def columns_to_graph(scores_df, sentiment_or_score):
+    '''
+    Returns only the columns of interest in the case when the user searches for course and professor at the same time. 
+    '''
     if sentiment_or_score == "sentiment":
         columns_to_graph = ['inst_sentiment', 'course_sentiment']
 
@@ -109,7 +112,7 @@ def columns_to_graph(scores_df, sentiment_or_score):
     current_columns = list(scores_df.columns)
     columns_to_graph = list(set(current_columns).intersection(columns_to_graph))
     scores_df = scores_df[columns_to_graph]
-    
+
     return scores_df
     
 
@@ -216,6 +219,11 @@ def course_score_graph(args_from_ui):
     plt.savefig('./static/images/coursescore.png')
 
 def course_and_prof_score_graph(args_from_ui):
+    '''
+    Creates a graph for the scores for a specific course taught by a specific professor together with 
+    information about that course taught by all professors, all courses taught by that specific professor, 
+    and the average overall department scores. 
+    '''
     scores_df = course_and_prof_score_df_maker(args_from_ui)
     scores_df = columns_to_graph(scores_df, 'score')
     plt = graph_from_df(scores_df)
@@ -228,6 +236,11 @@ def course_and_prof_score_graph(args_from_ui):
     plt.savefig('./static/images/courseprofscore.png')
 
 def course_and_prof_sentiment_graph(args_from_ui):
+    '''
+    Creates a graph for the sentiment scores for a specific course taught by a specific professor together with 
+    information about that course taught by all professors, all courses taught by that specific professor, 
+    and the average overall department scores. 
+    '''
     scores_df = course_and_prof_score_df_maker(args_from_ui)
     scores_df = columns_to_graph(scores_df, 'sentiment')
     plt = graph_from_df(scores_df)
@@ -240,6 +253,9 @@ def course_and_prof_sentiment_graph(args_from_ui):
     plt.savefig('./static/images/courseprofsent.png')
 
 def non_time_graphs(args_from_ui):
+    '''
+    Given arguments from the user, calls the appropriate graphing function to display the information requested. 
+    '''
     if len(args_from_ui) == 2:
         if 'dept' in args_from_ui and 'course_num' in args_from_ui:
             course_score_graph(args_from_ui)
