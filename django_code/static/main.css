@@ -67,12 +67,6 @@ label {
     color: #000000
 }
 
-p.num_results {
-    margin-left: 5px;
-    font-size: 12px;
-    background-color: #ffffff
-}
-
 table.form_course {
     text-align: left;
     background-color: #ffffff
@@ -101,45 +95,22 @@ table.form_prof input {
     margin-right: 5px;
 }
 
-
-table.courses {
-    border: 1px solid #ddd;
-    padding: 0px;
-    margin: 0px;
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
-table.courses tr th {
-    text-align: left;
-}
-
-table.courses tr td,
-table.courses tr th {
-    padding: 3px;
+p.num_results {
+    margin-left: 5px;
     font-size: 12px;
+    background-color: #ffffff
 }
 
-table.courses tr:nth-child(even) {
-    background: #eee;
-}
-
-ul.errorlist {
-    margin: 0px;
-    padding: 0px;
-    padding-top: 5px;
-
-}
-
-ul.errorlist li {
+p.would_like_str {
+    margin-left: 5px;
     font-size: 12px;
-    color: red;
-    margin: 0px;
-    padding: 0px;
+    background-color: #ffffff
 }
 
-span.helptext {
-    font-size: 13px;
-    color: #fffff;
+p.would_recommend_str {
+    margin-left: 5px;
+    font-size: 12px;
+    background-color: #ffffff
 }
 
 .center {
@@ -148,4 +119,12 @@ span.helptext {
     margin-right: auto;
     width: 50%;
     background-color: rgba(255, 255, 255, 0.75);
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    height: 100%;
 }

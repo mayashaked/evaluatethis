@@ -1,3 +1,18 @@
+#-------------------------------------------------------------------------------
+# Name:        views
+# Purpose:     Takes a Web request and returns a Web response. Determines the
+#              search forms that are displayed on the website, takes in the
+#              user's search inputs, cleans the inputs, and feeds the inputs
+#              into outside functions to generate and display the proper
+#              word clouds, graphs, dyadic partitioning results, or
+#              department rankings as needed.
+#
+# Author:      Lily Li
+#
+# Created:     02/20/2018
+#-------------------------------------------------------------------------------
+
+
 import json
 import traceback
 import sys
@@ -14,7 +29,7 @@ from course_name_converter import convert_course_name_to_course_num
 from gen_wordcloud import get_wc
 import score_graphs
 from graphs import graph_it
-import display_dyadic_partioning
+from display_dyadic_partitioning import display_dyadic_partitioning
 
 NOPREF_STR = 'No preference'
 RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
@@ -101,8 +116,6 @@ def home(request):
                 num_args += 1
             if data['prof_ln']:
                 args['prof_ln'] = data['prof_ln']
-            # if data['show_args']:
-            #     context['args'] = 'args_to_ui = ' + json.dumps(args, indent=2)
         
         if form_rank.is_valid():
             if form_rank.cleaned_data['rank']:
@@ -118,7 +131,7 @@ def home(request):
         elif ('rank' in args) and num_args > 0:
             context['err'] = "You cannot perform a search and \
                 view department rankings in the same request."
-        else: # a valid set of search categories
+        else: # a valid set of search categories was entered
             try:
                 res = find_courses(args)[0]
                 if len(res) > 0: # evals were found
@@ -131,22 +144,25 @@ def home(request):
                     context['num_results'] = len(res)
                     
                     if 'rank' in args:
+                    # we just want to display the dept rankings
                         context['rank'] = True
-                    # we want to generate graphs and images
                     else:
+                    # we want to generate word clouds, graphs, and dyadic partitioning results
                         context['rank'] = False
                         get_wc(args)
                         graph_it(args)
                         score_graphs.non_time_graphs(args)
                         would_like, would_recommend = display_dyadic_partitioning(args)
-                    # print(args)
+                        context['would_like_str'] = would_like
+                        context['would_recommend_str'] = would_recommend
+
+                    # specify which images should be displayed in index.html
                     if 'dept' in args and 'prof_fn' in args:
                         context['graph_type'] = 'course_and_prof'
                     elif 'dept' in args and 'course_num' in args:
                         context['graph_type'] = 'course'
                     elif 'prof_fn' in args:
                         context['graph_type'] = 'prof'
-                    # print(context)
                 
                 else:
                     res = None
