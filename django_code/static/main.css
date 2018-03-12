@@ -95,21 +95,9 @@ table.form_prof input {
     margin-right: 5px;
 }
 
-p.num_results {
+p.text {
     margin-left: 5px;
-    font-size: 12px;
-    background-color: #ffffff
-}
-
-p.would_like_str {
-    margin-left: 5px;
-    font-size: 12px;
-    background-color: #ffffff
-}
-
-p.would_recommend_str {
-    margin-left: 5px;
-    font-size: 12px;
+    font-size: 18px;
     background-color: #ffffff
 }
 
