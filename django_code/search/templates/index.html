@@ -45,7 +45,9 @@
         <div class="table">
             {% if result is not None %}
                 <p class="text"> Summary of {{ num_results }} evaluations.</p>
-                {% if rank %}
+                {% if result == 0 %}
+                    <p class="text"> No results were found, are you sure you searched for something that exists?</p>
+                {% elif rank %}
                     <table class="center">
                         <tr>
                             {% for col in columns %}

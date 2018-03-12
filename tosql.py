@@ -271,11 +271,9 @@ def gen_text(j, db):
             if row['inst_resp'] != None:
                 row['inst_resp'] = row['inst_resp'].replace(row['ln'], '')
 
-     finalalltext.tosql('text', con = db, flavor = 'sqlite', index = False)
+    finalalltext.tosql('text', con = db, flavor = 'sqlite', index = False)
 
-     pd.read_sql_query('DROP TABLE texttentative;', db)
-
-    pass
+    pd.read_sql_query('DROP TABLE texttentative;', db)
 
 
 if __name__ == "__main__":
