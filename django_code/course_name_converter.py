@@ -1,3 +1,18 @@
+#-------------------------------------------------------------------------------
+# Name:        course_name_converter
+# Purpose:     Given a department code and course name, queries the sql 
+#              database to find the number of the course. If the given 
+#              combination of dept and course name does not exist, the course 
+#              does not exist and convert_course_name_to_course_num returns None.
+#              The code to generate word clouds and graphs uses course_num, so 
+#              this helper function simplifies the output generation process.
+#
+# Author:      Lily Li
+#
+# Created:     03/09/2018
+#-------------------------------------------------------------------------------
+
+
 import sqlite3
 import os
 

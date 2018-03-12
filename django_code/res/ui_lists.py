@@ -1,13 +1,24 @@
+#-------------------------------------------------------------------------------
+# Name:        ui_lists
+# Purpose:     Queries the sql database and builds csv files of lists of 
+#              department codes, course numbers, course names, professor 
+#              last names, and professor first names to populate
+#              the dropdown menus on the website.
+#
+# Author:      Lily Li
+#
+# Created:     03/02/2018
+#-------------------------------------------------------------------------------
+
 import sqlite3
 import csv
 
 
 def generate_lists():
-
     connection = sqlite3.connect('reevaluations.db')
     c = connection.cursor()
 
-    # get lists of unique values from sql database
+    # get lists of unique, non-null values from sql database
     dept = c.execute('''SELECT DISTINCT dept FROM courses WHERE dept IS NOT 
         NULL and dept <> "" ORDER BY dept''').fetchall()
     course_num = c.execute('''SELECT DISTINCT course_number FROM courses 
@@ -23,8 +34,7 @@ def generate_lists():
 
     connection.close()
 
-    # write lists of unique values to file
-
+    # write lists of unique values to files
     f = open('dept_list.csv', 'w')
     w = csv.writer(f, delimiter="|")
     for row in dept:

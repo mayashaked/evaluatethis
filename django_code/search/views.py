@@ -34,6 +34,7 @@ from display_dyadic_partitioning import display_dyadic_partitioning
 NOPREF_STR = 'No preference'
 RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'res')
 
+TOTAL_NUM_EVALS = 26068 # total number of evaluations in the database
 
 def _load_column(filename, col=0):
     """Load single column from csv file."""
@@ -70,8 +71,6 @@ class SearchForm_course(forms.Form):
 class SearchForm_prof(forms.Form):
     prof_fn = forms.ChoiceField(label='Professor\'s First Name', choices=PROFS_FN, required=False)
     prof_ln = forms.ChoiceField(label='Professor\'s Last Name', choices=PROFS_LN, required=False)
-    # show_args = forms.BooleanField(label='Show args_to_ui',
-    #                                required=False) # delete this in end
 
 
 class SearchForm_rank(forms.Form):
@@ -79,6 +78,7 @@ class SearchForm_rank(forms.Form):
 
 
 def home(request):
+    # remove the word cloud and graph images after displaying them on the website
     for file in os.listdir(os.path.join(os.path.dirname(__file__), '..', 'static', 'images')):
         if file.endswith(".png"):
             os.remove(os.path.join(os.path.dirname(__file__), '..', 'static', 'images', file))
@@ -95,17 +95,20 @@ def home(request):
         args = {}
         num_args = 0 # used in conditional check later on
         if form_course.is_valid():
-            # Convert form data to an args dictionary for find_courses
+            # convert form data to an args dictionary for find_courses
             data = form_course.cleaned_data
             if data['dept']:
                 args['dept'] = data['dept']
                 num_args += 1
             if data['course_num'] and data['course_name']: 
-            # users only need to submit one, but if they submit both, we pick one field for the sql query
+                # users only need to submit one, but if they submit both, 
+                # we pick one field for the sql query
                 args['course_num'] = data['course_num']
             elif data['course_num']:
                 args['course_num'] = data['course_num']
             elif data['course_name']:
+                # the code to produce graphs and word clouds uses course numbers
+                # to make things easier, we convert course names to course nums
                 course_num = convert_course_name_to_course_num(data['dept'], data['course_name'])
                 args['course_num'] = course_num
 
@@ -121,7 +124,8 @@ def home(request):
             if form_rank.cleaned_data['rank']:
                 args['rank'] = form_rank.cleaned_data['rank']
 
-        # check the conditional inputs of the dropdown menus
+        # check the conditional inputs of the dropdown menus to make sure
+        # the user entered the correct inputs
         if ('dept' in args) != ('course_num' in args):
             context['err'] = "To search by course, \
                 department and course number or course name are required."
@@ -165,6 +169,7 @@ def home(request):
                         context['graph_type'] = 'prof'
                 
                 else:
+                    # the search inputs did not result in a valid course or prof
                     res = None
 
             except Exception as e:
@@ -178,22 +183,28 @@ def home(request):
                  res = None
 
     else:
+        # the user has not yet entered any inputs, 
+        #create dropdown menus on the website
         form_course = SearchForm_course()
         form_prof = SearchForm_prof()
         form_rank = SearchForm_rank()
 
-    # Handle different responses of res
     if res is None:
         context['result'] = None
 
-    else: #create outputs (ex. tables and graphs)
+    else: #create outputs of images
         context['columns'] = res.columns
         df_rows = res.values.tolist()
         result = []
         for row in df_rows:
             result.append(tuple(row))
         context['result'] = result
-        context['num_results'] = len(res)
+        if 'rank' in args:
+            # res is a df of 109 departments, but we aggregated
+            # all the evals in the db to make the rankings
+            context['num_results'] = TOTAL_NUM_EVALS
+        else:
+            context['num_results'] = len(res)
 
     context['form_course'] = form_course
     context['form_prof'] = form_prof
