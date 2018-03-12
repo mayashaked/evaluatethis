@@ -170,17 +170,17 @@ def home(request):
                 
                 else:
                     # the search inputs did not result in a valid course or prof
-                    res = None
+                    res = pd.DataFrame()
 
             except Exception as e:
-                 print('Exception caught')
-                 bt = traceback.format_exception(*sys.exc_info()[:3])
-                 context['err'] = """
-                 An exception was thrown in find_courses:
-                 <pre>{}
-         {}</pre>
-                 """.format(e, '\n'.join(bt))
-                 res = None
+                    print('Exception caught')
+                    bt = traceback.format_exception(*sys.exc_info()[:3])
+                    context['err'] = """
+                    An exception was thrown in find_courses:
+                    <pre>{}
+                    {}</pre>
+                    """.format(e, '\n'.join(bt))
+                    res = None
 
     else:
         # the user has not yet entered any inputs, 
@@ -191,7 +191,9 @@ def home(request):
 
     if res is None:
         context['result'] = None
-
+    elif res.empty:
+        context['result'] = 0
+        context['num_results'] = 0
     else: #create outputs of images
         context['columns'] = res.columns
         df_rows = res.values.tolist()
