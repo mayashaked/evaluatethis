@@ -177,7 +177,7 @@ def prof_score_graph(args_from_ui):
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     title = prof + "'s aggregated scores with dept avg."
     plt.title(title)
-    plt.ylabel("Aggregated scores from reviews")
+    plt.ylabel("Aggregated scores from reviews", fontsize = 15)
     plt.savefig('./static/images/profscore.png')
 
 def prof_sentiment_graph(args_from_ui):
@@ -191,7 +191,7 @@ def prof_sentiment_graph(args_from_ui):
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     title = prof + "'s sentiment scores with dept avg."
     plt.title(title)
-    plt.ylabel("Sentiment scores from reviews")
+    plt.ylabel("Sentiment scores from reviews", fontsize = 15)
     plt.savefig('./static/images/profsent.png')
 
 def course_sentiment_graph(args_from_ui):
@@ -206,7 +206,7 @@ def course_sentiment_graph(args_from_ui):
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
     title = "Sentiment scores for " + course + " with dept avg."
     plt.title(title)
-    plt.ylabel("Sentiment scores from reviews")
+    plt.ylabel("Sentiment scores from reviews", fontsize = 15)
     plt.savefig('./static/images/coursesent.png')
 
 def course_score_graph(args_from_ui):
@@ -221,7 +221,7 @@ def course_score_graph(args_from_ui):
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
     title = "Aggregated scores for " + course + " with dept avg."
     plt.title(title)
-    plt.ylabel("Aggregated scores from reviews")
+    plt.ylabel("Aggregated scores from reviews", fontsize = 15)
     plt.savefig('./static/images/coursescore.png')
 
 def course_and_prof_score_graph(args_from_ui):
@@ -238,7 +238,7 @@ def course_and_prof_score_graph(args_from_ui):
     course = dept + ' ' + args_from_ui['course_num']
     title = "Scores for " + prof + "'s " + course + ' with scores from dept and past classes'
     plt.title(title)
-    plt.ylabel("Aggregated scores from evaluations")
+    plt.ylabel("Aggregated scores from evaluations", fontsize = 15)
     plt.savefig('./static/images/courseprofscore.png')
 
 def course_and_prof_sentiment_graph(args_from_ui):
@@ -255,7 +255,7 @@ def course_and_prof_sentiment_graph(args_from_ui):
     course = dept + ' ' + args_from_ui['course_num']
     title = "Sentiment scores for " + prof + "'s " + course + ' with scores from dept and past classes'
     plt.title(title)
-    plt.ylabel("Aggregated scores from evaluations")
+    plt.ylabel("Aggregated scores from evaluations", fontsize = 15)
     plt.savefig('./static/images/courseprofsent.png')
 
 def non_time_graphs(args_from_ui):
