@@ -1,3 +1,12 @@
+#-------------------------------------------------------------------------------
+# Name:        Graphs
+# Purpose:     Builds graphs that display the time demands of the course, professor, or
+#              professor that the user searched for. 
+#
+# Author:      Alex Maiorella, Lily Li, Maya Shaked, Sam Hoffman
+#
+# Created:     03/04/2018
+#-------------------------------------------------------------------------------
 import courses
 import pandas as pd
 import numpy as np
@@ -34,6 +43,8 @@ def get_small_df(dataframe, prof_or_course):
     if prof_or_course == "prof":
         while dataframe.course.unique().shape[0] > 10:
             timespan -= 1
+            if timespan == 1:
+                break
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['course']).mean()
 
@@ -41,6 +52,8 @@ def get_small_df(dataframe, prof_or_course):
         dataframe['prof_name'] = dataframe['fn'].astype('str') + ' ' + dataframe['ln']
         while dataframe.prof_name.unique().shape[0] > 10:
             timespan -= 1
+            if timespan == 1:
+                break
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['prof_name']).mean()
 
@@ -80,10 +93,10 @@ def time_graph(lows, avgs, highs, title):
              bottom=lows, color = '#f442cb')
     p3 = plt.bar(ind, avgs, width,
              bottom=avgs, color = '#63cbe8')
-    plt.ylabel('Amount of time spent')
+    plt.ylabel('Amount of time spent', fontsize = 15)
     plt.title(title)
     xnames = list(lows.axes[0])
-    plt.xticks(ind, xnames, rotation = 10, fontsize = 6, ha = 'left')
+    plt.xticks(ind, xnames, rotation = 10, fontsize = 10, ha = 'left')
     plt.legend((p1[0], p2[0], p3[0]), ('Low', 'Average', 'High'))
     plt.tight_layout()
     return plt

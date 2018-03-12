@@ -1,3 +1,12 @@
+#-------------------------------------------------------------------------------
+# Name:        Score Graphs
+# Purpose:     Builds graphs to compare the score types for the course, professor
+#              or course and professor that the user searched for. 
+#
+# Author:      Alex Maiorella, Lily Li, Maya Shaked, Sam Hoffman
+#
+# Created:     03/04/2018
+#-------------------------------------------------------------------------------
 import courses
 import pandas as pd
 import numpy as np
@@ -35,14 +44,7 @@ def df_maker(args_from_ui, sentiment_or_score, graph_type):
 
     current_columns = list(small_df.columns)
     columns_to_graph = list(set(current_columns).intersection(columns_to_graph))
-    small_df = small_df[columns_to_graph]
-
-    small_df.dropna(axis = (1), how = "all", inplace = True)
-    if graph_type == "prof":
-        continuous_df = small_df.groupby(['course']).mean()
-    if graph_type == "course":
-        continuous_df = small_df.groupby(['prof_name']).mean()
-
+    continuous_df = small_df[columns_to_graph]
 
     compare_to_dept_columns = list(continuous_df.columns)
     dept_df = dept_df[compare_to_dept_columns].mean()
@@ -63,11 +65,15 @@ def get_small_df(dataframe, prof_or_course):
     if prof_or_course == "prof":
         while dataframe.course.unique().shape[0] > 10:
             timespan -= 1
+            if timespan == 1:
+                break
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['course']).mean()
 
     if prof_or_course == "course":
         while dataframe.prof_name.unique().shape[0] > 10:
+            if timespan == 1:
+                break
             timespan -= 1
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['prof_name']).mean()
@@ -171,7 +177,7 @@ def prof_score_graph(args_from_ui):
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     title = prof + "'s aggregated scores with dept avg."
     plt.title(title)
-    plt.ylabel("Aggregated scores from reviews")
+    plt.ylabel("Aggregated scores from reviews", fontsize = 15)
     plt.savefig('./static/images/profscore.png')
 
 def prof_sentiment_graph(args_from_ui):
@@ -185,7 +191,7 @@ def prof_sentiment_graph(args_from_ui):
     prof = args_from_ui['prof_fn'] + " " + args_from_ui['prof_ln']
     title = prof + "'s sentiment scores with dept avg."
     plt.title(title)
-    plt.ylabel("Sentiment scores from reviews")
+    plt.ylabel("Sentiment scores from reviews", fontsize = 15)
     plt.savefig('./static/images/profsent.png')
 
 def course_sentiment_graph(args_from_ui):
@@ -200,7 +206,7 @@ def course_sentiment_graph(args_from_ui):
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
     title = "Sentiment scores for " + course + " with dept avg."
     plt.title(title)
-    plt.ylabel("Sentiment scores from reviews")
+    plt.ylabel("Sentiment scores from reviews", fontsize = 15)
     plt.savefig('./static/images/coursesent.png')
 
 def course_score_graph(args_from_ui):
@@ -215,7 +221,7 @@ def course_score_graph(args_from_ui):
     course = args_from_ui['dept'] + " " + args_from_ui['course_num']
     title = "Aggregated scores for " + course + " with dept avg."
     plt.title(title)
-    plt.ylabel("Aggregated scores from reviews")
+    plt.ylabel("Aggregated scores from reviews", fontsize = 15)
     plt.savefig('./static/images/coursescore.png')
 
 def course_and_prof_score_graph(args_from_ui):
@@ -232,7 +238,7 @@ def course_and_prof_score_graph(args_from_ui):
     course = dept + ' ' + args_from_ui['course_num']
     title = "Scores for " + prof + "'s " + course + ' with scores from dept and past classes'
     plt.title(title)
-    plt.ylabel("Aggregated scores from evaluations")
+    plt.ylabel("Aggregated scores from evaluations", fontsize = 15)
     plt.savefig('./static/images/courseprofscore.png')
 
 def course_and_prof_sentiment_graph(args_from_ui):
@@ -249,7 +255,7 @@ def course_and_prof_sentiment_graph(args_from_ui):
     course = dept + ' ' + args_from_ui['course_num']
     title = "Sentiment scores for " + prof + "'s " + course + ' with scores from dept and past classes'
     plt.title(title)
-    plt.ylabel("Aggregated scores from evaluations")
+    plt.ylabel("Aggregated scores from evaluations", fontsize = 15)
     plt.savefig('./static/images/courseprofsent.png')
 
 def non_time_graphs(args_from_ui):
