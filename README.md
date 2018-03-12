@@ -1,16 +1,3 @@
-So this fantastic project involes scraping course evaluations and using the data to create neat profiles for each professor and an easy way to compare them.
+This is our final project for CMSC 12200: Computer Science with Applications 2, winter 2018. We scraped data from evaluations.uchicago.edu and built a website where users can quickly and easily find an overview for a given course or professor. They can view aggregated data across multiple evaluations to quickly compare courses, professors, and departments. The evaluations data is not publicly available due to privacy concerns, but our code is included.
 
-Notes: 
-    I got selenium to work so we can login to shibbolith from command line. First install selenium (using pip) and chromedriver from this     link (https://sites.google.com/a/chromium.org/chromedriver/). Then in python:
-
-    >>> from selenium import webdriver
-    >>> from selenium.webdriver.common.keys import Keys
-    >>> driver = webdriver.Chrome(PATH TO CHROMEDRIVER.EXE)
-    >>> driver.get("https://evaluations.uchicago.edu/")
-    >>> elem = driver.find_element_by_name("j_username")
-    >>> elemp = driver.find_element_by_name("j_password")
-    >>> elem.send_keys("USERNAME HERE")
-    >>> elemp.send_keys("PASSWORD HERE")
-    >>> elemp.send_keys(Keys.RETURN)
-
-    Literally magical
+Project members: Sam Hoffman, Lily Li, Alex Maiorella, Maya Shaked
