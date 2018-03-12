@@ -45,12 +45,6 @@ def df_maker(args_from_ui, sentiment_or_score, graph_type):
     current_columns = list(small_df.columns)
     columns_to_graph = list(set(current_columns).intersection(columns_to_graph))
     continuous_df = small_df[columns_to_graph]
-    
-    
-    # if graph_type == "prof":
-    #     continuous_df = small_df.groupby(['course']).mean()
-    # if graph_type == "course":
-    #     continuous_df = small_df.groupby(['prof_name']).mean()
 
     compare_to_dept_columns = list(continuous_df.columns)
     dept_df = dept_df[compare_to_dept_columns].mean()
@@ -83,7 +77,6 @@ def get_small_df(dataframe, prof_or_course):
             timespan -= 1
             dataframe = dataframe[dataframe.year >= current_year - timespan]
         dataframe = dataframe.groupby(['prof_name']).mean()
-        print(dataframe)
 
 
 
