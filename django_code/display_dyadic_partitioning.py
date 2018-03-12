@@ -14,7 +14,6 @@ def display_dyadic_partitioning(args):
 
 def avg_generator(df):
     would_recommend = pd.factorize(df.would_recommend)[0]
-    print(would_recommend)
     would_recommend = would_recommend[would_recommend != -1]
     would_recommend = 1 - would_recommend.mean()
     would_like_inst = pd.factorize(df.would_like_inst)[0]
